@@ -1,13 +1,14 @@
 services:
   backend_laravel:
-    image: irfnysin/backend-bissakerja:${APP_VERSION}
+    image: irfnysin/backend-bissakerja:1.0.0
     container_name: backend_laravel
     # volumes:
     #   - ./:/var/www/html
     volumes:
-      - /root/jatim-bissa/backend:/public
+      - /root/jatim-bissa/backend/public:/var/www/html/public
+      - /root/jatim-bissa/backend/storage:/var/www/html/storage
     working_dir: /var/www/html
-    command: php artisan serve --host=0.0.0.0 --port=8000
+    command: php artisan serve --host=127.0.0.1 --port=8000
     environment:
       - DB_CONNECTION=${DB_CONNECTION}
       - DB_HOST=${DB_HOST}
