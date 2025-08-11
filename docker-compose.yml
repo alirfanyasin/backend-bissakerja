@@ -2,8 +2,10 @@ services:
   backend_laravel:
     image: irfnysin/backend-bissakerja:${APP_VERSION}
     container_name: backend_laravel
+    # volumes:
+    #   - ./:/var/www/html
     volumes:
-      - ./:/var/www/html
+      - /root/jatim-bissa/backend:/public
     working_dir: /var/www/html
     command: php artisan serve --host=0.0.0.0 --port=8000
     environment:

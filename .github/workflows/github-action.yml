@@ -12,7 +12,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Get package version
-        run: echo "APP_VERSION=$(node -p "require('./composer.json').version")" >> $GITHUB_ENV
+        run: echo "APP_VERSION=$(grep '"version"' composer.json | head -1 | awk -F '"' '{print $4}')" >> $GITHUB_ENV
+        # run: echo "APP_VERSION=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+        # run: echo "APP_VERSION=$(node -p "require('./composer.json').version")" >> $GITHUB_ENV
 
       - name: build image
         run: docker build -t irfnysin/backend-bissakerja:${{ env.APP_VERSION }} .
@@ -45,7 +47,7 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            mkdir -p ~/deploy-bissakerja/backend
+            mkdir -p ~/jatim-bissa/backend
 
       - name: Copy compose file to VM
         uses: appleboy/scp-action@master
@@ -55,7 +57,7 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT }}
           source: "docker-compose.yml"
-          target: "~/deploy-bissakerja/backend"
+          target: "~/jatim-bissa/backend"
 
       - name: Run docker compose
         env:
@@ -65,7 +67,7 @@ jobs:
           DB_PORT: 3306
           DB_DATABASE: db_jatim_bissa
           DB_USERNAME: db_jatim_bissa
-          DB_PASSWORD: xWsd38YFsXxsbTtS
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -74,7 +76,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           envs: APP_VERSION,DB_CONNECTION,DB_HOST,DB_PORT,DB_DATABASE,DB_USERNAME,DB_PASSWORD
           script: |
-            cd deploy-bissakerja/backend
+            cd jatim-bissa/backend
             APP_VERSION="$APP_VERSION" \
             DB_CONNECTION="$DB_CONNECTION" \
             DB_HOST="$DB_HOST" \
