@@ -44,34 +44,34 @@ services:
     container_name: laravel_app
 
     environment:
-      DB_HOST: mysql
+      DB_HOST: localhost
       DB_PORT: 3306
-      DB_DATABASE: laravel
-      DB_USERNAME: root
-      DB_PASSWORD: root
+      DB_DATABASE: db_jatim_bissa
+      DB_USERNAME: db_jatim_bissa
+      DB_PASSWORD: xWsd38YFsXxsbTtS
     depends_on:
       - mysql
 
     network_mode: host
 
-  mysql:
-    image: mysql:8.0
-    container_name: mysql_db
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: laravel
-    ports:
-      - "3306:3306"
+  # mysql:
+  #   image: mysql:8.0
+  #   container_name: mysql_db
+  #   restart: always
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: root
+  #     MYSQL_DATABASE: laravel
+  #   ports:
+  #     - "3306:3306"
 
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: phpmyadmin
-    restart: always
-    ports:
-      - "8080:80"
-    environment:
-      PMA_HOST: mysql
-      PMA_PORT: 3306
-    depends_on:
-      - mysql
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin
+  #   container_name: phpmyadmin
+  #   restart: always
+  #   ports:
+  #     - "8080:80"
+  #   environment:
+  #     PMA_HOST: mysql
+  #     PMA_PORT: 3306
+  #   depends_on:
+  #     - mysql
