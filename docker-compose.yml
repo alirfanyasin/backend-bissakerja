@@ -49,8 +49,6 @@ services:
       DB_DATABASE: db_jatim_bissa
       DB_USERNAME: db_jatim_bissa
       DB_PASSWORD: xWsd38YFsXxsbTtS
-    depends_on:
-      - mysql
 
     network_mode: host
 
