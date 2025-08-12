@@ -42,14 +42,12 @@ services:
   laravel:
     image: irfnysin/laravel:latest
     environment:
-      APP_ENV: production
-      APP_DEBUG: "false"
-      DB_CONNECTION: ${DB_CONNECTION}
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: db_jatim_bissa
+      DB_USERNAME: db_jatim_bissa
+      DB_PASSWORD: xWsd38YFsXxsbTtS
     network_mode: host
 
   # mysql:
