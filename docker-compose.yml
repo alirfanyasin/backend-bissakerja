@@ -41,16 +41,14 @@
 services:
   laravel:
     image: irfnysin/laravel:latest
-    container_name: laravel_app
-
+    ports:
+      - "8000:8000"
     environment:
-      DB_HOST: localhost
+      DB_HOST: host.docker.internal
       DB_PORT: 3306
       DB_DATABASE: db_jatim_bissa
       DB_USERNAME: db_jatim_bissa
       DB_PASSWORD: xWsd38YFsXxsbTtS
-
-    network_mode: host
 
   # mysql:
   #   image: mysql:8.0
