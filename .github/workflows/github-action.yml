@@ -42,7 +42,7 @@ jobs:
         env:
           DB_CONNECTION: mysql
           DB_HOST: localhost
-          DB_PORT: "3306"
+          DB_PORT: 3306
           DB_DATABASE: db_jatim_bissa
           DB_USERNAME: db_jatim_bissa
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
@@ -50,6 +50,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
+          envs: DB_CONNECTION,DB_HOST,DB_PORT,DB_DATABASE,DB_USERNAME,DB_PASSWORD
           script: |
             docker pull irfnysin/laravel:latest
             docker stop laravel_app || true
