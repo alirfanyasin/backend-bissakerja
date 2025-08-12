@@ -8,60 +8,72 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Login registry
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.IMAGE_REGISTRY_USERNAME }}
           password: ${{ secrets.IMAGE_REGISTRY_TOKEN }}
 
-      - name: Build Docker image
-        run: docker build -t irfnysin/laravel:latest .
-
-      - name: Push Docker image
-        run: docker push irfnysin/laravel:latest
+      - name: Build and push Docker image
+        run: |
+          docker build -t irfnysin/laravel:latest .
+          docker push irfnysin/laravel:latest
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
-
     steps:
-      - name: Ensure compose dir on server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-
       - name: Deploy to VPS via SSH
         uses: appleboy/ssh-action@v0.1.10
-        env:
-          DB_CONNECTION: mysql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_DATABASE: ${{ secrets.DB_DATABASE }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
-          envs: DB_CONNECTION,DB_HOST,DB_PORT,DB_DATABASE,DB_USERNAME,DB_PASSWORD
           script: |
-            docker pull irfnysin/laravel:latest
-            docker stop laravel_app || true
-            docker rm laravel_app || true
-            docker run -d \
-              --name laravel_app \
-              -p 8000:8000 \
-              -e DB_CONNECTION=${DB_CONNECTION} \
-              -e DB_HOST=${DB_HOST} \
-              -e DB_PORT=${DB_PORT} \
-              -e DB_DATABASE=${DB_DATABASE} \
-              -e DB_USERNAME=${DB_USERNAME} \
-              -e DB_PASSWORD=${DB_PASSWORD} \
-              irfnysin/laravel:latest
+            # Masuk ke direktori aplikasi atau buat jika belum ada
+            mkdir -p ~/laravel-app
+            cd ~/laravel-app
+
+            # Buat docker-compose.yml jika belum ada
+            if [ ! -f "docker-compose.yml" ]; then
+              cat > docker-compose.yml << 'EOF'
+            version: '3.8'
+
+            services:
+              laravel:
+                image: irfnysin/laravel:latest
+                container_name: laravel_app
+                restart: unless-stopped
+                ports:
+                  - "8000:8000"
+                environment:
+                  - DB_CONNECTION=mysql
+                  - DB_HOST=127.0.0.1
+                  - DB_PORT=3306
+                  - DB_DATABASE=${{ secrets.DB_DATABASE }}
+                  - DB_USERNAME=${{ secrets.DB_USERNAME }}
+                  - DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+                  - APP_ENV=production
+                  - APP_DEBUG=false
+                network_mode: host
+                volumes:
+                  - laravel_storage:/var/www/html/storage
+
+            volumes:
+              laravel_storage:
+            EOF
+            fi
+
+            # Pull image terbaru dan deploy
+            docker compose pull laravel
+            docker compose down
+            docker compose up -d
+
+            # Cleanup old images
+            docker image prune -f
+
+            echo "✅ Deployment completed!"

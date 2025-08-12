@@ -1,73 +1,23 @@
-# services:
-#   backend_laravel:
-#     image: irfnysin/backend-bissakerja:${APP_VERSION}
-#     container_name: backend_laravel
-#     environment:
-#       APP_ENV: production
-#       APP_DEBUG: "false"
-#       DB_CONNECTION: ${DB_CONNECTION}
-#       DB_HOST: ${DB_HOST}
-#       DB_PORT: ${DB_PORT}
-#       DB_DATABASE: ${DB_DATABASE}
-#       DB_USERNAME: ${DB_USERNAME}
-#       DB_PASSWORD: ${DB_PASSWORD}
-#     volumes:
-#       # persist app uploads/logs; code comes from the image
-#       - /root/jatim-bissa/backend/storage:/var/www/html/storage
-#       - /root/jatim-bissa/backend/public:/var/www/html/public
-#     working_dir: /var/www/html
-#     # keep php-fpm as the main process, and prep Laravel at start
-#     entrypoint: ["/bin/sh", "-lc"]
-#     command: >
-#       'php artisan key:generate --force || true
-#        php artisan storage:link || true
-#        php artisan migrate --force || true
-#        php artisan config:cache
-#        php artisan route:cache
-#        php-fpm'
-#     healthcheck:
-#       test: ["CMD", "php", "-v"]
-#       interval: 30s
-#       timeout: 5s
-#       retries: 3
-#     restart: unless-stopped
-#     networks:
-#       - appnet
-
-# networks:
-#   appnet:
-#     driver: bridge
+version: "3.8"
 
 services:
   laravel:
     image: irfnysin/laravel:latest
+    container_name: laravel_app
+    restart: unless-stopped
     environment:
-      DB_CONNECTION: mysql
-      DB_HOST: 127.0.0.1
-      DB_PORT: 3306
-      DB_DATABASE: db_jatim_bissa
-      DB_USERNAME: db_jatim_bissa
-      DB_PASSWORD: xWsd38YFsXxsbTtS
+      - DB_CONNECTION=mysql
+      - DB_HOST=127.0.0.1
+      - DB_PORT=3306
+      - DB_DATABASE=db_jatim_bissa
+      - DB_USERNAME=db_jatim_bissa
+      - DB_PASSWORD=xWsd38YFsXxsbTtS
+      - APP_ENV=production
+      - APP_DEBUG=false
     network_mode: host
+    volumes:
+      - laravel_storage:/var/www/html/storage
+      - laravel_storage:/val/www/html/public
 
-  # mysql:
-  #   image: mysql:8.0
-  #   container_name: mysql_db
-  #   restart: always
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: root
-  #     MYSQL_DATABASE: laravel
-  #   ports:
-  #     - "3306:3306"
-
-  # phpmyadmin:
-  #   image: phpmyadmin/phpmyadmin
-  #   container_name: phpmyadmin
-  #   restart: always
-  #   ports:
-  #     - "8080:80"
-  #   environment:
-  #     PMA_HOST: mysql
-  #     PMA_PORT: 3306
-  #   depends_on:
-  #     - mysql
+volumes:
+  laravel_storage:
