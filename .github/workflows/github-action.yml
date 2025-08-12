@@ -28,52 +28,24 @@ jobs:
     needs: build
     steps:
       - name: Deploy to VPS via SSH
-        uses: appleboy/ssh-action@v0.1.10
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          source: "docker-compose.yml"
+          target: "~/laravel-app"
+
+      - name: Run docker-compose on VPS
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            # Masuk ke direktori aplikasi atau buat jika belum ada
-            mkdir -p ~/laravel-app
             cd ~/laravel-app
-
-            # Buat docker-compose.yml jika belum ada
-            if [ ! -f "docker-compose.yml" ]; then
-              cat > docker-compose.yml << 'EOF'
-            version: '3.8'
-
-            services:
-              laravel:
-                image: irfnysin/laravel:latest
-                container_name: laravel_app
-                restart: unless-stopped
-                ports:
-                  - "8000:8000"
-                environment:
-                  - DB_CONNECTION=mysql
-                  - DB_HOST=127.0.0.1
-                  - DB_PORT=3306
-                  - DB_DATABASE=${{ secrets.DB_DATABASE }}
-                  - DB_USERNAME=${{ secrets.DB_USERNAME }}
-                  - DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-                  - APP_ENV=production
-                  - APP_DEBUG=false
-                network_mode: host
-                volumes:
-                  - laravel_storage:/var/www/html/storage
-
-            volumes:
-              laravel_storage:
-            EOF
-            fi
-
-            # Pull image terbaru dan deploy
-            docker compose pull laravel
+            docker compose pull
             docker compose down
             docker compose up -d
-
-            # Cleanup old images
             docker image prune -f
-
             echo "✅ Deployment completed!"
