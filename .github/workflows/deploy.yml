@@ -31,19 +31,18 @@ jobs:
           target: "/www/wwwroot/backend"
 
       - name: Run deployment commands on VPS
-        uses: appleboy/ssh-action@v0.1.7
+        uses: garygrossgarten/github-action-ssh@release
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
-          script: |
-            export PATH=$PATH:/usr/bin/composer
+          command: |
             cd /www/wwwroot/backend
 
             echo "${{ secrets.LARAVEL_ENV }}" > .env
 
             echo "📦 Install dependencies..."
-            composer install --no-dev --optimize-autoloader
+            composer install --no-dev --optimize-autoloader --no-interaction
 
             echo "⚙️ Jalankan migrate..."
             php artisan migrate --force
@@ -54,10 +53,7 @@ jobs:
             php artisan route:cache
             php artisan view:cache
 
-            echo "🔗 Symblink running"
+            echo "Symblink running"
             php artisan storage:link
-
-            chmod -R 775 storage bootstrap/cache
-            chown -R www-data:www-data storage bootstrap/cache
 
             echo "✅ Deployment selesai!"
