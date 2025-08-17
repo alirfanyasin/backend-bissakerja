@@ -12,6 +12,9 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Debug file structure
+        run: ls -R
+
   deploy:
     runs-on: ubuntu-latest
     needs: build
@@ -22,9 +25,18 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
-          port: 22
-          source: "app,bootstrap,config,database,public,resources,routes,storage,artisan,composer.json,composer.lock"
+          source: .
           target: "/www/wwwroot/backend"
+
+      # - name: Copy source code to VPS
+      #   uses: appleboy/scp-action@v0.1.7
+      #   with:
+      #     host: ${{ secrets.VPS_HOST }}
+      #     username: ${{ secrets.VPS_USER }}
+      #     password: ${{ secrets.VPS_PASSWORD }}
+      #     port: 22
+      #     source: "app,bootstrap,config,database,public,resources,routes,storage,artisan,composer.json,composer.lock"
+      #     target: "/www/wwwroot/backend"
 
       - name: Run deployment commands on VPS
         uses: garygrossgarten/github-action-ssh@release
