@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class PengalamanKerja extends Model
 {
     /** @use HasFactory<\Database\Factories\PengalamanKerjaFactory> */
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = ['name', 'nama_perusahaan', 'tipe_pekerjaan', 'lokasi', 'tanggal_mulai', 'tanggal_akhir', 'deskripsi', 'sertifikat_file', 'resume_id', 'status'];
 

@@ -19,7 +19,7 @@ class PerusahaanProfileController extends Controller
     public function showPerusahaanProfile(): JsonResponse
     {
         try {
-            $userId = Auth::id();
+            $userId = Auth::user()->id;
 
             $profile = PerusahaanProfile::with(['province', 'regency', 'user'])
                 ->where('user_id', $userId)

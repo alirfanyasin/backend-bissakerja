@@ -28,10 +28,10 @@ services:
     container_name: mysql_db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: db_jatim_bissa
       MYSQL_USER: db_jatim_bissa
-      MYSQL_PASSWORD: xWsd38YFsXxsbTtS
+      MYSQL_PASSWORD: root
     ports:
       - "3308:3306"
     volumes:
@@ -46,7 +46,7 @@ services:
     environment:
       PMA_HOST: mysql
       PMA_USER: root
-      PMA_PASSWORD: root_password
+      PMA_PASSWORD: root
     ports:
       - "8080:80"
     networks:

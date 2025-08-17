@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Pendidikan extends Model
 {
     /** @use HasFactory<\Database\Factories\PendidikanFactory> */
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = ['tingkat', 'bidang_studi', 'nilai', 'tanggal_mulai', 'tanggal_akhir', 'lokasi', 'deskripsi', 'ijazah', 'resume_id'];
 

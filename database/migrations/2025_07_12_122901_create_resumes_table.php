@@ -14,9 +14,8 @@ return new class extends Migration
         Schema::create('resumes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_profile_id')->constrained()->cascadeOnDelete();
-            $table->string('ringkasan_pribadi')->nullable();
+            $table->text('ringkasan_pribadi')->nullable();
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 

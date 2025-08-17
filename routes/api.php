@@ -15,6 +15,7 @@ use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\UserProfileController;
 use App\Models\Disabilitas;
+use App\Models\Resume;
 use Illuminate\Support\Facades\Route;
 
 // Route::prefix('superadmin')
@@ -250,6 +251,8 @@ Route::middleware(['auth:sanctum'])
         Route::get('/resume/pengalaman-kerja', [ResumeController::class, 'getPengalamanKerja']);
         Route::put('/resume/pengalaman-kerja/{id}', [ResumeController::class, 'updatePengalamanKerja']);
         Route::delete('/resume/pengalaman-kerja/{id}', [ResumeController::class, 'deletePengalamanKerja']);
+
+        Route::delete('/resume/detele/cv', [ResumeController::class, 'deleteCV']);
 
         // Statistik
         Route::get('/statistik-total-lowongan', [StatistikController::class, 'getStatistikLowongan']);

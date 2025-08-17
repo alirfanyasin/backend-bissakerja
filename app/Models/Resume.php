@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Resume extends Model
 {
     /** @use HasFactory<\Database\Factories\ResumeFactory> */
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = ['user_profile_id', 'ringkasan_pribadi'];
 

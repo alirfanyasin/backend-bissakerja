@@ -20,7 +20,6 @@ return new class extends Migration
             $table->unsignedBigInteger('resume_id')->nullable();
             $table->foreign('resume_id')->references('id')->on('resumes')->onDelete('cascade');
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 

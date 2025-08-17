@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Sertifikasi extends Model
 {
     /** @use HasFactory<\Database\Factories\SertifikasiFactory> */
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = ['program', 'lembaga', 'nilai', 'tanggal_mulai', 'tanggal_akhir', 'deskripsi', 'sertifikat_file', 'resume_id'];
 

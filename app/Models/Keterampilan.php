@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Keterampilan extends Model
 {
     /** @use HasFactory<\Database\Factories\KeterampilanFactory> */
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
         'nama_keterampilan',

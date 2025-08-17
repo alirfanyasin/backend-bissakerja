@@ -6,6 +6,7 @@ use App\Enum\RoleEnum;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +26,6 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6',
-            // 'avatar' => 'nullable|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'role' => 'required|string|in:user,perusahaan,admin,superadmin',
         ]);
 
@@ -52,14 +52,14 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function login(Request $request)
+    public function login(Request $request): JsonResponse
     {
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|min:6',
         ]);
+
         if (Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
-            // $request->session()->regenerate();
             $user = Auth::user();
             return response()->json([
                 'status' => true,
@@ -78,9 +78,7 @@ class AuthController extends Controller
         return response()->json([
             'status' => false,
             'message' => 'Login Failed'
-        ], 401); // Ubah ke 401 untuk unauthorized
-
-
+        ], 401);
     }
 
     public function user(Request $request)
@@ -96,220 +94,335 @@ class AuthController extends Controller
         ]);
     }
 
-
     public function updateProfile(Request $request)
     {
         try {
+            DB::beginTransaction();
+
             $user = Auth::user();
 
             if (!$user) {
                 return response()->json([
-                    'success' => false,
+                    'status' => false,
                     'message' => 'User not authenticated'
                 ], 401);
             }
 
-            // Validate input data
-            $validatedData = $request->validate([
-                'name' => 'required|string|max:255|min:2',
+            // Validation rules
+            $rules = [
+                'name' => 'required|string|max:255',
                 'email' => [
                     'required',
+                    'string',
                     'email',
                     'max:255',
                     Rule::unique('users')->ignore($user->id)
                 ],
-                'password' => 'nullable|string|min:6|confirmed',
-                'current_password' => 'nullable|string|required_with:password'
-            ]);
+            ];
 
-            // If password is being updated, verify current password
-            if (!empty($validatedData['password'])) {
-                if (empty($validatedData['current_password'])) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Current password is required when updating password',
-                        'errors' => [
-                            'current_password' => ['Current password is required']
-                        ]
-                    ], 422);
-                }
+            // Add password validation if password is being updated
+            if ($request->filled('password')) {
+                $rules['current_password'] = 'required|string';
+                $rules['password'] = 'required|string|min:6|confirmed';
+            }
 
-                if (!Hash::check($validatedData['current_password'], $user->password)) {
+            $validator = Validator::make($request->all(), $rules);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Verify current password if updating password
+            if ($request->filled('password')) {
+                if (!Hash::check($request->current_password, $user->password)) {
                     return response()->json([
-                        'success' => false,
+                        'status' => false,
                         'message' => 'Current password is incorrect',
                         'errors' => [
                             'current_password' => ['Current password is incorrect']
                         ]
                     ], 422);
                 }
-
-                // Hash new password
-                $validatedData['password'] = Hash::make($validatedData['password']);
-            } else {
-                // Remove password from update data if not provided
-                unset($validatedData['password']);
             }
 
-            // Remove confirmation and current password from update data
-            unset($validatedData['password_confirmation']);
-            unset($validatedData['current_password']);
+            // Update user data
+            $updateData = [
+                'name' => $request->name,
+                'email' => $request->email,
+            ];
 
-            // Update user data using transaction
-            DB::beginTransaction();
+            if ($request->filled('password')) {
+                $updateData['password'] = Hash::make($request->password);
+            }
 
-            $user->update($validatedData);
+            $user->update($updateData);
 
             DB::commit();
 
-            // Return updated user data (excluding password)
+            // Return updated user data
             $updatedUser = $user->fresh();
             $updatedUser->makeHidden(['password', 'remember_token']);
 
+            Log::info('Profile updated successfully', ['user_id' => $user->id]);
+
             return response()->json([
-                'success' => true,
+                'status' => true,
                 'message' => 'Profile updated successfully',
-                'data' => [
-                    'user' => $updatedUser
-                ]
+                'user' => $updatedUser,
+                'role' => $updatedUser->getRoleNames()->first()
             ], 200);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
+            DB::rollBack();
             return response()->json([
-                'success' => false,
+                'status' => false,
                 'message' => 'Validation failed',
                 'errors' => $e->errors()
             ], 422);
         } catch (Exception $e) {
             DB::rollBack();
+            Log::error('Profile update error', [
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
 
             return response()->json([
-                'success' => false,
+                'status' => false,
                 'message' => 'An error occurred while updating profile',
                 'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
             ], 500);
         }
     }
 
+    /**
+     * Update avatar - Support both base64 and file upload
+     */
     public function updateAvatar(Request $request)
     {
         try {
-            // Get authenticated user
             $user = Auth::user();
 
             if (!$user) {
                 return response()->json([
-                    'success' => false,
+                    'status' => false,
                     'message' => 'Unauthorized'
                 ], 401);
             }
 
-            // Validate request
-            $validator = Validator::make($request->all(), [
-                'avatar' => 'required|string', // Base64 image data
+            Log::info('Avatar update request', [
+                'user_id' => $user->id,
+                'content_type' => $request->header('Content-Type'),
+                'has_file' => $request->hasFile('avatar'),
+                'has_avatar_field' => $request->has('avatar')
             ]);
 
-            if ($validator->fails()) {
+            // Check if it's a file upload or base64
+            if ($request->hasFile('avatar')) {
+                return $this->handleFileUpload($request, $user);
+            } elseif ($request->has('avatar')) {
+                return $this->handleBase64Upload($request, $user);
+            } else {
                 return response()->json([
-                    'success' => false,
-                    'message' => 'Validation failed',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            $avatarData = $request->input('avatar');
-
-            // Validate base64 image format
-            if (!$this->isValidBase64Image($avatarData)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid image format',
+                    'status' => false,
+                    'message' => 'No avatar data provided',
                     'errors' => [
-                        'avatar' => ['Please provide a valid image file']
+                        'avatar' => ['Please provide an avatar file or base64 data']
                     ]
                 ], 422);
             }
-
-            // Extract image data and extension
-            $imageInfo = $this->extractImageInfo($avatarData);
-
-            if (!$imageInfo) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unable to process image',
-                    'errors' => [
-                        'avatar' => ['Invalid image data']
-                    ]
-                ], 422);
-            }
-
-            // Validate image size (max 5MB)
-            $imageSize = strlen(base64_decode($imageInfo['data']));
-            $maxSize = 5 * 1024 * 1024; // 5MB
-
-            if ($imageSize > $maxSize) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Image too large',
-                    'errors' => [
-                        'avatar' => ['Image size must be less than 5MB']
-                    ]
-                ], 422);
-            }
-
-            // Delete old avatar if exists
-            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
-                Storage::disk('public')->delete($user->avatar);
-            }
-
-            // Generate unique filename
-            $filename = 'avatars/' . $user->id . '_' . Str::random(10) . '.' . $imageInfo['extension'];
-
-            // Store the image
-            $stored = Storage::disk('public')->put($filename, base64_decode($imageInfo['data']));
-
-            if (!$stored) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to save image',
-                    'errors' => [
-                        'avatar' => ['Unable to save image file']
-                    ]
-                ], 500);
-            }
-
-            // Update user avatar path
-            $user->avatar = Storage::disk('public')->url($filename);
-            $user->save();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Profile photo updated successfully!',
-                'data' => [
-                    'user' => [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'email' => $user->email,
-                        'avatar' => $user->avatar,
-                        'role' => $user->role,
-                        'email_verified_at' => $user->email_verified_at,
-                        'created_at' => $user->created_at,
-                        'updated_at' => $user->updated_at
-                    ]
-                ]
-            ], 200);
-        } catch (\Exception $e) {
-            // Log error for debugging
+        } catch (Exception $e) {
             Log::error('Avatar update error: ' . $e->getMessage(), [
                 'user_id' => Auth::id(),
                 'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
-                'success' => false,
+                'status' => false,
                 'message' => 'An error occurred while updating profile photo',
                 'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
             ], 500);
         }
+    }
+
+    /**
+     * Handle file upload (multipart/form-data)
+     */
+    private function handleFileUpload(Request $request, $user)
+    {
+        $validator = Validator::make($request->all(), [
+            'avatar' => 'required|image|mimes:jpeg,jpg,png,gif|max:5120', // 5MB max
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $file = $request->file('avatar');
+
+        // Delete old avatar if exists
+        $this->deleteOldAvatar($user);
+
+        // Generate unique filename
+        $extension = $file->getClientOriginalExtension();
+        $filename = 'avatars/' . $user->id . '_' . Str::random(10) . '.' . $extension;
+
+        // Store the file
+        $path = $file->storeAs('public/' . dirname($filename), basename($filename));
+
+        if (!$path) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to save image',
+                'errors' => [
+                    'avatar' => ['Unable to save image file']
+                ]
+            ], 500);
+        }
+
+        // Update user avatar path
+        $relativePath = str_replace('public/', '', $path);
+        $user->avatar = Storage::url($relativePath);
+        $user->save();
+
+        Log::info('Avatar uploaded successfully via file upload', [
+            'user_id' => $user->id,
+            'path' => $relativePath
+        ]);
+
+        return $this->avatarUpdateResponse($user);
+    }
+
+    /**
+     * Handle base64 upload
+     */
+    private function handleBase64Upload(Request $request, $user)
+    {
+        $validator = Validator::make($request->all(), [
+            'avatar' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $avatarData = $request->input('avatar');
+
+        // Validate base64 image format
+        if (!$this->isValidBase64Image($avatarData)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid image format',
+                'errors' => [
+                    'avatar' => ['Please provide a valid image file (JPEG, PNG, GIF)']
+                ]
+            ], 422);
+        }
+
+        // Extract image data and extension
+        $imageInfo = $this->extractImageInfo($avatarData);
+
+        if (!$imageInfo) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unable to process image',
+                'errors' => [
+                    'avatar' => ['Invalid image data']
+                ]
+            ], 422);
+        }
+
+        // Validate image size (max 5MB)
+        $imageSize = strlen(base64_decode($imageInfo['data']));
+        $maxSize = 5 * 1024 * 1024; // 5MB
+
+        if ($imageSize > $maxSize) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Image too large',
+                'errors' => [
+                    'avatar' => ['Image size must be less than 5MB']
+                ]
+            ], 422);
+        }
+
+        // Delete old avatar if exists
+        $this->deleteOldAvatar($user);
+
+        // Generate unique filename
+        $filename = 'avatars/' . $user->id . '_' . Str::random(10) . '.' . $imageInfo['extension'];
+
+        // Store the image
+        $stored = Storage::disk('public')->put($filename, base64_decode($imageInfo['data']));
+
+        if (!$stored) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to save image',
+                'errors' => [
+                    'avatar' => ['Unable to save image file']
+                ]
+            ], 500);
+        }
+
+        // Update user avatar path
+        $user->avatar = Storage::url($filename);
+        $user->save();
+
+        Log::info('Avatar uploaded successfully via base64', [
+            'user_id' => $user->id,
+            'filename' => $filename
+        ]);
+
+        return $this->avatarUpdateResponse($user);
+    }
+
+    /**
+     * Delete old avatar file
+     */
+    private function deleteOldAvatar($user)
+    {
+        if ($user->avatar) {
+            // Extract path from URL
+            $path = str_replace('/storage/', '', parse_url($user->avatar, PHP_URL_PATH));
+            if ($path && Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+                Log::info('Old avatar deleted', ['user_id' => $user->id, 'path' => $path]);
+            }
+        }
+    }
+
+    /**
+     * Standard avatar update response
+     */
+    private function avatarUpdateResponse($user)
+    {
+        return response()->json([
+            'status' => true,
+            'message' => 'Profile photo updated successfully!',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'avatar' => $user->avatar,
+                'role' => $user->role,
+                'email_verified_at' => $user->email_verified_at,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at
+            ],
+            'role' => $user->getRoleNames()->first()
+        ], 200);
     }
 
     /**
@@ -372,7 +485,3 @@ class AuthController extends Controller
         ], 200);
     }
 }
-
-
-// 'token' => $user->createToken($user->name)->plainTextToken,
-// return $user->createToken($user->name)->plainTextToken;

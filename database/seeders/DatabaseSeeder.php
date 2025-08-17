@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
             AccountSeeder::class,
             // PendidikanSeeder::class,
             TipePekerjaanSeeder::class,
-            ModelKerjaSeeder::class,
+            // ModelKerjaSeeder::class,
             KeterampilanSeeder::class,
             PerusahaanSeeder::class,
             DisabilitasSeeder::class,
@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
             PengalamanKerjaLowonganSeeder::class,
 
             IndustriSeeder::class,
-            LowonganKerjaSeeder::class,
+            // LowonganKerjaSeeder::class,
 
         ]);
     }

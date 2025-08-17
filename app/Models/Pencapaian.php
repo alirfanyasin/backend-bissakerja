@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Pencapaian extends Model
 {
     /** @use HasFactory<\Database\Factories\PencapaianFactory> */
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = ['name', 'penyelenggara', 'tanggal_pencapaian', 'dokumen', 'resume_id'];
 

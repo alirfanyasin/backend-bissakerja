@@ -11,6 +11,7 @@ use App\Models\Pelatihan;
 use App\Models\Pencapaian;
 use App\Models\Pendidikan;
 use App\Models\User;
+use App\Models\UserProfile;
 use App\Trait\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,7 +31,7 @@ class ResumeController extends Controller
     public function createResume(Request $request)
     {
         $validatedData = $request->validate([
-            'ringkasan_pribadi' => 'required|string|max:255',
+            'ringkasan_pribadi' => 'required|string',
         ]);
 
         $userProfile = Auth::user()->userProfile;
@@ -184,7 +185,7 @@ class ResumeController extends Controller
         try {
             $data = $request->validate([
                 'nama_keterampilan' => 'required|array',
-                'nama_keterampilan.*' => 'required|string|max:100',
+                'nama_keterampilan.*' => 'required|string',
             ]);
 
             $resume = Auth::user()->userProfile->resume;
@@ -259,12 +260,12 @@ class ResumeController extends Controller
         try {
             $data = $request->validate([
                 'tingkat' => ['required', 'in:' . implode(',', array_map(fn($e) => $e->value, EducationLevel::cases()))],
-                'bidang_studi' => 'nullable|string|max:100',
+                'bidang_studi' => 'nullable|string',
                 'nilai' => 'nullable|string|max:10',
                 'tanggal_mulai' => 'required|date',
                 'tanggal_akhir' => 'required|date|after_or_equal:tanggal_mulai',
                 'lokasi' => 'nullable|string|max:255',
-                'deskripsi' => 'nullable|string|max:500',
+                'deskripsi' => 'nullable|string',
                 'ijazah_base64' => 'required|string',
                 'ijazah_info.name' => 'required|string',
             ]);
@@ -414,8 +415,8 @@ class ResumeController extends Controller
     {
         try {
             $data = $request->validate([
-                'name' => 'required|string|max:255',
-                'penyelenggara' => 'required|string|max:255',
+                'name' => 'required|string',
+                'penyelenggara' => 'required|string',
                 'tanggal_pencapaian' => 'required|date',
                 'dokumen_base64' => 'required|string',
                 'dokumen_info.name' => 'required|string',
@@ -543,8 +544,8 @@ class ResumeController extends Controller
     {
         try {
             $data = $request->validate([
-                'name' => 'required|string|max:150',
-                'penyelenggara' => 'required|string|max:150',
+                'name' => 'required|string',
+                'penyelenggara' => 'required|string',
                 'tanggal_mulai' => 'nullable|date',
                 'tanggal_akhir' => 'nullable|date|after_or_equal:tanggal_mulai',
                 'deskripsi' => 'nullable|string',
@@ -608,8 +609,8 @@ class ResumeController extends Controller
         try {
             $data = $request->validate([
                 'pelatihan_id' => 'required|integer|exists:pelatihan,id',
-                'name' => 'nullable|string|max:150',
-                'penyelenggara' => 'nullable|string|max:150',
+                'name' => 'nullable|string',
+                'penyelenggara' => 'nullable|string',
                 'tanggal_mulai' => 'nullable|date',
                 'tanggal_akhir' => 'nullable|date|after_or_equal:tanggal_mulai',
                 'deskripsi' => 'nullable|string',
@@ -686,8 +687,8 @@ class ResumeController extends Controller
     {
         try {
             $data = $request->validate([
-                'program' => 'required|string|max:150',
-                'lembaga' => 'required|string|max:150',
+                'program' => 'required|string',
+                'lembaga' => 'required|string',
                 'nilai' => 'required|numeric|min:0|max:100',
                 'tanggal_mulai' => 'nullable|date',
                 'tanggal_akhir' => 'nullable|date|after_or_equal:tanggal_mulai',
@@ -838,10 +839,10 @@ class ResumeController extends Controller
     {
         try {
             $data = $request->validate([
-                'name' => 'required|string|max:150',
-                'nama_perusahaan' => 'required|string|max:150',
-                'tipe_pekerjaan' => 'required|string|max:100',
-                'lokasi' => 'required|string|max:150',
+                'name' => 'required|string',
+                'nama_perusahaan' => 'required|string',
+                'tipe_pekerjaan' => 'required|string',
+                'lokasi' => 'required|string',
                 'tanggal_mulai' => 'required|date',
                 'tanggal_akhir' => 'nullable|date|after_or_equal:tanggal_mulai',
                 'deskripsi' => 'nullable|string',
@@ -986,7 +987,7 @@ class ResumeController extends Controller
                 'district_ktp_id' => 'required|string|size:7|exists:districts,id',
                 'village_ktp_id' => 'required|string|size:10|exists:villages,id',
                 'kode_pos_ktp' => 'required|string|digits:5',
-                'alamat_lengkap_ktp' => 'required|string|max:500',
+                'alamat_lengkap_ktp' => 'required|string',
 
                 // Validasi untuk Domisili
                 'province_domisili_id' => 'required|string|size:2|exists:provinces,id',
@@ -994,7 +995,7 @@ class ResumeController extends Controller
                 'district_domisili_id' => 'required|string|size:7|exists:districts,id',
                 'village_domisili_id' => 'required|string|size:10|exists:villages,id',
                 'kode_pos_domisili' => 'required|string|digits:5',
-                'alamat_lengkap_domisili' => 'required|string|max:500',
+                'alamat_lengkap_domisili' => 'required|string',
             ]);
 
             // Mendapatkan user profile
@@ -1035,5 +1036,16 @@ class ResumeController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+
+    public function deleteCV()
+    {
+        $userProfile = UserProfile::where('user_id', Auth::user()->id)->first();
+        $userProfile->delete();
+
+        return response()->json([
+            'message' => 'CV berhasil dihapus',
+        ], 201);
     }
 }

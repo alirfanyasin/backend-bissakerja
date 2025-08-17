@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class LokasiKtp extends Model
 {
     /** @use HasFactory<\Database\Factories\LokasiKtpFactory> */
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
 
     protected $table = 'lokasi_user_profiles';
