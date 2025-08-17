@@ -50,4 +50,7 @@ jobs:
             php artisan route:cache
             php artisan view:cache
 
+            echo "Symblink running"
+            php artisan storage:link
+
             echo "✅ Deployment selesai!"
