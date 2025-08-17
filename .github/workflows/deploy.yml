@@ -27,19 +27,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
-          source: |
-            app
-            bootstrap
-            config
-            database
-            public
-            resources
-            routes
-            storage
-            artisan
-            composer.json
-            composer.lock
-            vite.config.js
+          source: "app,bootstrap,config,database,public,resources,routes,storage,artisan,composer.json,composer.lock,vite.config.js,package-lock.json,package.json"
           target: "/www/wwwroot/backend"
 
       - name: Run deployment commands on VPS
