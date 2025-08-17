@@ -1,0 +1,53 @@
+name: Deploy Laravel to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Copy source code to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: 22
+          source: "app,bootstrap,config,database,public,resources,routes,storage,artisan,composer.json,composer.lock"
+          target: "/www/wwwroot/backend"
+
+      - name: Run deployment commands on VPS
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: 22
+          script: |
+            cd /www/wwwroot/backend
+
+            echo "${{ secrets.LARAVEL_ENV }}" > .env
+
+            echo "📦 Install dependencies..."
+            composer install --no-dev --optimize-autoloader
+
+            echo "⚙️ Jalankan migrate..."
+            php artisan migrate --force
+
+            echo "🔑 Cache config dan route..."
+            php artisan optimize:clear
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            echo "✅ Deployment selesai!"
