@@ -27,13 +27,12 @@ jobs:
           target: "/www/wwwroot/backend"
 
       - name: Run deployment commands on VPS
-        uses: appleboy/ssh-action@v0.1.7
+        uses: garygrossgarten/github-action-ssh@release
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
-          port: 22
-          script: |
+          command: |
             cd /www/wwwroot/backend
 
             echo "${{ secrets.LARAVEL_ENV }}" > .env
