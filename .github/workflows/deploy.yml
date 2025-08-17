@@ -25,7 +25,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
-          source: .
+          source: "app,bootstrap,config,database,public,resources,routes,storage,artisan,composer.json,composer.lock,vite.config.js"
           target: "/www/wwwroot/backend"
 
       # - name: Copy source code to VPS
