@@ -31,12 +31,12 @@ jobs:
           target: "/www/wwwroot/backend"
 
       - name: Run deployment commands on VPS
-        uses: garygrossgarten/github-action-ssh@release
+        uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
-          command: |
+          script: |
             export PATH=$PATH:/usr/bin/composer
             cd /www/wwwroot/backend
 
@@ -54,7 +54,10 @@ jobs:
             php artisan route:cache
             php artisan view:cache
 
-            echo "Symblink running"
+            echo "🔗 Symblink running"
             php artisan storage:link
+
+            chmod -R 775 storage bootstrap/cache
+            chown -R www-data:www-data storage bootstrap/cache
 
             echo "✅ Deployment selesai!"
