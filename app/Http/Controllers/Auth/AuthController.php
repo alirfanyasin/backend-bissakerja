@@ -254,7 +254,7 @@ class AuthController extends Controller
     private function handleFileUpload(Request $request, $user)
     {
         $validator = Validator::make($request->all(), [
-            'avatar' => 'required|image|mimes:jpeg,jpg,png,gif|max:5120', // 5MB max
+            'avatar' => 'required|file|mimes:jpeg,jpg,png,gif|max:5120', // 5MB max
         ]);
 
         if ($validator->fails()) {

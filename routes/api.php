@@ -109,10 +109,17 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/refresh-csrf', [AuthController::class, 'refreshCsrf']);
 
+// Route::middleware('auth:sanctum')->group(function () {
+//     Route::get('/user', [AuthController::class, 'user']);
+//     Route::patch('/profile', [AuthController::class, 'updateProfile']);
+//     Route::patch('/profile/update-avatar', [AuthController::class, 'updateAvatar']);
+//     Route::post('/logout', [AuthController::class, 'logout']);
+// });
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
-    Route::patch('/profile', [AuthController::class, 'updateProfile']);
-    Route::patch('/profile/update-avatar', [AuthController::class, 'updateAvatar']);
+    Route::put('/profile', [AuthController::class, 'updateProfile']);
+    Route::put('/profile/update-avatar', [AuthController::class, 'updateAvatar']);
     Route::post('/logout', [AuthController::class, 'logout']);
 });
 
