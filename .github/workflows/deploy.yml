@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
       - name: Copy source code to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
