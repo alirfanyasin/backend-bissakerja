@@ -37,6 +37,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
           command: |
+            export PATH=$PATH:/usr/bin/composer
             cd /www/wwwroot/backend
 
             echo "${{ secrets.LARAVEL_ENV }}" > .env
