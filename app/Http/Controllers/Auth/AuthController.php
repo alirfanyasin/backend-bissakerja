@@ -40,7 +40,6 @@ class AuthController extends Controller
         }
 
         try {
-            DB::beginTransaction();
 
             $user = User::create([
                 'name'     => $request->name,
@@ -52,18 +51,13 @@ class AuthController extends Controller
 
             $user->assignRole($request->role);
 
-            // Jika role perusahaan → buat profile minimal
             if ($request->role === 'perusahaan') {
                 PerusahaanProfile::create([
                     'nama_perusahaan'   => $user->name,
                     'user_id'           => $user->id,
-                    'visi'              => '',
-                    'misi'              => '',
-                    'nib'               => uniqid('NIB-'),
                 ]);
             }
 
-            DB::commit();
 
             return response()->json([
                 'status'  => true,

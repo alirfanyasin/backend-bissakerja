@@ -27,14 +27,14 @@ return new class extends Migration
             $table->string('link_website')->nullable();
             $table->text('alamat_lengkap')->nullable();
             // Informasi Visi dan Misi
-            $table->longText('visi');
-            $table->longText('misi');
+            $table->longText('visi')->nullable();
+            $table->longText('misi')->nullable();
             // Informasi Nilai-Nilai Perusahaan dan Sertifikat
             $table->json('nilai_nilai')->nullable();
             $table->json('sertifikat')->nullable();
 
             $table->string('bukti_wajib_lapor')->nullable();
-            $table->string('nib')->unique();
+            $table->string('nib')->unique()->nullable();
 
             // Informasi Media Sosial
             $table->string('linkedin')->nullable();
