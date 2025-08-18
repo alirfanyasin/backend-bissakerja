@@ -16,16 +16,16 @@ return new class extends Migration
             // Informasi Dasar
             $table->string('logo')->nullable();
             $table->string('nama_perusahaan')->nullable();
-            $table->string('industri');
+            $table->string('industri')->nullable();
             $table->string('tahun_berdiri')->nullable();
             $table->string('jumlah_karyawan')->nullable();
-            $table->char('province_id', 2);
-            $table->char('regencie_id', 4);
-            $table->longText('deskripsi');
+            $table->char('province_id', 2)->nullable();
+            $table->char('regencie_id', 4)->nullable();
+            $table->longText('deskripsi')->nullable();
             // Informasi Kontak
             $table->string('no_telp')->nullable();
             $table->string('link_website')->nullable();
-            $table->text('alamat_lengkap');
+            $table->text('alamat_lengkap')->nullable();
             // Informasi Visi dan Misi
             $table->longText('visi');
             $table->longText('misi');
@@ -33,7 +33,7 @@ return new class extends Migration
             $table->json('nilai_nilai')->nullable();
             $table->json('sertifikat')->nullable();
 
-            $table->string('bukti_wajib_lapor');
+            $table->string('bukti_wajib_lapor')->nullable();
             $table->string('nib')->unique();
 
             // Informasi Media Sosial

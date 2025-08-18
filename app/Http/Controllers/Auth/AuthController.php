@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Enum\RoleEnum;
 use App\Http\Controllers\Controller;
+use App\Models\PerusahaanProfile;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -36,6 +37,8 @@ class AuthController extends Controller
             ], 403);
         }
 
+        DB::beginTransaction();
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -46,6 +49,14 @@ class AuthController extends Controller
 
         $user->assignRole($request->role);
 
+        // Create Perusahaan Profile
+        if ($request->role === 'perusahaan') {
+            PerusahaanProfile::create([
+                'nama_perusahaan' => $user->name,
+                'user_id' => $user->id
+            ]);
+        }
+        DB::commit();
         return response()->json([
             'status' => true,
             'message' => 'User registered successfully',
