@@ -24,42 +24,61 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6',
-            'role' => 'required|string|in:user,perusahaan,admin,superadmin',
+            'role'     => 'required|string|in:user,perusahaan,admin,superadmin',
         ]);
 
-        if ($request->role === RoleEnum::ADMIN->value && Auth::user()->hasRole(RoleEnum::SUPER_ADMIN->value)) {
-            return response()->json([
-                'status' => false,
-                'message' => 'You do not have permission to register an admin user.',
-            ], 403);
+        // Cek kalau role yang mau dibuat = admin, tapi user bukan superadmin
+        if ($request->role === RoleEnum::ADMIN->value) {
+            if (!Auth::check() || !Auth::user()->hasRole(RoleEnum::SUPER_ADMIN->value)) {
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'You do not have permission to register an admin user.',
+                ], 403);
+            }
         }
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'avatar' => $request->avatar,
-            'role' => $request->role,
-        ]);
+        try {
+            DB::beginTransaction();
 
-        $user->assignRole($request->role);
-
-        if ($user->role == 'perusahaan') {
-            PerusahaanProfile::create([
-                'nama_perusahaan' => $user->name,
-                'user_id' => $user->id
+            $user = User::create([
+                'name'     => $request->name,
+                'email'    => $request->email,
+                'password' => Hash::make($request->password),
+                'avatar'   => $request->avatar ?? null,
+                'role'     => $request->role,
             ]);
+
+            $user->assignRole($request->role);
+
+            if ($request->role === 'perusahaan') {
+                PerusahaanProfile::create([
+                    'nama_perusahaan' => $user->name,
+                    'user_id'         => $user->id,
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status'  => true,
+                'message' => 'User registered successfully',
+                'user'    => $user,
+            ], 201);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status'  => false,
+                'message' => 'Registration failed',
+                'error'   => $e->getMessage(),
+            ], 500);
         }
-
-
-        return response()->json([
-            'status' => true,
-            'message' => 'User registered successfully',
-        ], 200);
     }
+
+
 
     public function login(Request $request): JsonResponse
     {
