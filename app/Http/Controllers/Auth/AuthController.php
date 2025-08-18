@@ -47,6 +47,13 @@ class AuthController extends Controller
 
         $user->assignRole($request->role);
 
+        if ($user->role == 'perusahaan') {
+            PerusahaanProfile::create([
+                'nama_perusahaan' => $user->name,
+                'user_id' => $user->id
+            ]);
+        }
+
 
         return response()->json([
             'status' => true,
