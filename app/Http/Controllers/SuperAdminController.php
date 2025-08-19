@@ -6,6 +6,7 @@ use App\Enum\RoleEnum;
 use App\Http\Requests\Superadmin\CreateAccountDisnakerDaerahRequest;
 use App\Http\Requests\Superadmin\UpdateAccountDisnakerDaerahRequest;
 use App\Models\AdminProfile;
+use App\Models\Disabilitas;
 use App\Models\Province;
 use App\Models\Regency;
 use App\Models\User;
@@ -14,11 +15,9 @@ use App\Trait\RoleCheck;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Request as FacadesRequest;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -143,7 +142,7 @@ class SuperAdminController extends Controller
             }
 
             if ($request->has('name')) {
-                $query->where('name', 'like', '%' . $request->input('name') . '%');
+                $query->where('name', 'like', '%'.$request->input('name').'%');
             }
 
             $perPage = $request->input('per_page', 15);
@@ -219,7 +218,7 @@ class SuperAdminController extends Controller
             // Update avatar
             if ($request->hasFile('avatar')) {
                 $avatar = $request->file('avatar');
-                $avatarFilename = Str::random(20) . '.' . $avatar->getClientOriginalExtension();
+                $avatarFilename = Str::random(20).'.'.$avatar->getClientOriginalExtension();
 
                 // Simpan ke disk 'avatar'
                 Storage::disk('avatar')->put($avatarFilename, file_get_contents($avatar));
@@ -230,7 +229,7 @@ class SuperAdminController extends Controller
                 }
 
                 // Simpan path baru
-                $user->avatar = 'avatar/' . $avatarFilename;
+                $user->avatar = 'avatar/'.$avatarFilename;
                 $user->save();
             }
 
@@ -265,6 +264,115 @@ class SuperAdminController extends Controller
             return $this->errorResponse('Akun disnaker daerah tidak ditemukan.', 404);
         } catch (\Throwable $th) {
             return $this->errorResponse($th->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Membuat kategori disabilitas baru dengan 3 tingkat default (Sedang, Ringan, Berat).
+     *
+     * @return JsonResponse
+     */
+    public function createDisabilitas(Request $request)
+    {
+        if ($this->isSuperAdmin()) {
+            return $this->errorResponse('Tidak dapat menambahkan disabilitas baru.', 403);
+        }
+
+        $validateData = $request->validate([
+            'name' => 'required|string|unique:disabilitas,name',
+        ]);
+
+        try {
+            $tingkatDisabilitas = ['Sedang', 'Ringan', 'Berat'];
+
+            foreach ($tingkatDisabilitas as $tingkat) {
+                Disabilitas::create([
+                    'kategori_disabilitas' => strtolower($validateData['name']),
+                    'tingkat_disabilitas' => $tingkat,
+                ]);
+            }
+
+            return $this->successResponse('Disabilitas berhasil ditambahkan.');
+        } catch (\Throwable $e) {
+            Log::channel('log_error')->error($e->getMessage());
+
+            return $this->errorResponse('Gagal membuat kategori disabilitas', 500);
+        }
+    }
+
+    /**
+     * Mengupdate kategori disabilitas berdasarkan nama yang ada.
+     *
+     * @param  int  $id
+     * @return JsonResponse
+     */
+    public function updateDisabilitas($id, Request $request)
+    {
+        if ($this->isSuperAdmin()) {
+            return $this->errorResponse('Tidak dapat menambahkan disabilitas baru.', 403);
+        }
+
+        $validateData = $request->validate([
+            'name' => 'required|string|exists:disabilitas,name',
+        ]);
+
+        try {
+            $data = Disabilitas::where('kategori_disabilitas', $validateData['name'])->get();
+
+            foreach ($data as $d) {
+                $d->kategori_disabilitas = strtolower($validateData['name']);
+                $d->save();
+            }
+
+            return $this->successResponse('Disabilitas berhasil diupdate.');
+        } catch (\Throwable $e) {
+            Log::channel('log_error')->error($e->getMessage());
+
+            return $this->errorResponse('Gagal memperbarui disabilitas', 500);
+        }
+    }
+
+    /**
+     * Menghapus disabilitas berdasarkan ID.
+     *
+     * @param  int  $id
+     * @return JsonResponse
+     */
+    public function deleteDisabilitas($id, Request $request)
+    {
+        if ($this->isSuperAdmin()) {
+            return $this->errorResponse('Tidak dapat menghapus disabilitas baru.', 403);
+        }
+
+        try {
+            Disabilitas::findOrFail($id)->delete();
+
+            return $this->successResponse('Disabilitas berhasil dihapus.');
+        } catch (\Throwable $e) {
+            Log::channel('log_error')->error($e->getMessage());
+
+            return $this->errorResponse('Gagal menghapus disabilitas', 500);
+        }
+    }
+
+    /**
+     * Mengambil semua data disabilitas.
+     *
+     * @return JsonResponse
+     */
+    public function getDisabilitas()
+    {
+        if ($this->isAllRoles()) {
+            return $this->errorResponse('Tidak dapat menampilkan disabilitas.', 403);
+        }
+        try {
+            $data = Disabilitas::all();
+
+            return $this->successResponse($data);
+        } catch (\Throwable $e) {
+            Log::channel('log_error')->error($e->getMessage());
+
+            return $this->errorResponse('Gagal mengambil disabilitas', 500);
         }
     }
 }

@@ -5,20 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Disabilitas;
 use App\Models\Lamaran;
 use App\Models\PostLowongan;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class PostLowonganController extends Controller
 {
-
-
-
-
     /**
      * Display a listing of the resource.
-     *
      */
     public function index()
     {
@@ -71,7 +66,7 @@ class PostLowonganController extends Controller
     {
         $companyProfile = Auth::user()->perusahaanProfile;
 
-        if (!$companyProfile) {
+        if (! $companyProfile) {
             return response()->json([
                 'success' => false,
                 'message' => 'Hanya perusahaan yang dapat membuat lowongan.',
@@ -127,7 +122,7 @@ class PostLowonganController extends Controller
             $postLowongan = PostLowongan::create($postLowonganData);
 
             // Attach disabilitas jika ada
-            if (!empty($validated['disabilityIds'])) {
+            if (! empty($validated['disabilityIds'])) {
                 $postLowongan->disabilitas()->attach($validated['disabilityIds']);
             }
 
@@ -156,7 +151,7 @@ class PostLowonganController extends Controller
                     'skills' => $postLowongan->skills,
                     'perusahaan_profile' => $postLowongan->perusahaanProfile,
                     'disabilitas' => $postLowongan->disabilitas,
-                ]
+                ],
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -164,11 +159,10 @@ class PostLowonganController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat membuat lowongan',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-
 
     /**
      * Display a listing of the resource.
@@ -182,7 +176,7 @@ class PostLowonganController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $postLowongan
+            'data' => $postLowongan,
         ]);
     }
 
@@ -194,10 +188,10 @@ class PostLowonganController extends Controller
         $user = Auth::user();
 
         // Pastikan perusahaan punya profil
-        if (!$user->perusahaanProfile) {
+        if (! $user->perusahaanProfile) {
             return response()->json([
                 'success' => false,
-                'message' => 'Perusahaan belum melengkapi profil.'
+                'message' => 'Perusahaan belum melengkapi profil.',
             ], 403);
         }
 
@@ -206,10 +200,10 @@ class PostLowonganController extends Controller
             ->where('perusahaan_profile_id', $user->perusahaanProfile->id)
             ->first();
 
-        if (!$postLowongan) {
+        if (! $postLowongan) {
             return response()->json([
                 'success' => false,
-                'message' => 'Lowongan tidak ditemukan atau bukan milik perusahaan ini.'
+                'message' => 'Lowongan tidak ditemukan atau bukan milik perusahaan ini.',
             ], 404);
         }
 
@@ -218,10 +212,9 @@ class PostLowonganController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Lowongan berhasil dihapus.'
+            'message' => 'Lowongan berhasil dihapus.',
         ]);
     }
-
 
     public function lihatPelamar($id)
     {
@@ -245,35 +238,33 @@ class PostLowonganController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $postLowongan
+            'data' => $postLowongan,
         ]);
     }
-
-
 
     public function updateStatus($id, Request $request)
     {
         try {
             // Find the application
             $lamaran = Lamaran::find($id);
-            if (!$lamaran) {
+            if (! $lamaran) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Lamaran tidak ditemukan'
+                    'message' => 'Lamaran tidak ditemukan',
                 ], 404);
             }
 
             // Validate the request
             $validator = Validator::make($request->all(), [
                 'status' => 'required|in:pending,reviewed,interview,accepted,rejected',
-                'feedback' => 'nullable|string|max:1000' // Add feedback validation
+                'feedback' => 'nullable|string|max:1000', // Add feedback validation
             ]);
 
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Data tidak valid',
-                    'errors' => $validator->errors()
+                    'errors' => $validator->errors(),
                 ], 422);
             }
 
@@ -302,7 +293,7 @@ class PostLowonganController extends Controller
                     if (empty($feedback)) {
                         return response()->json([
                             'success' => false,
-                            'message' => 'Feedback wajib diisi untuk penolakan lamaran'
+                            'message' => 'Feedback wajib diisi untuk penolakan lamaran',
                         ], 422);
                     }
 
@@ -327,16 +318,14 @@ class PostLowonganController extends Controller
                     'interview_at' => $lamaran->interview_at,
                     'accepted_at' => $lamaran->accepted_at,
                     'rejected_at' => $lamaran->rejected_at,
-                ]
+                ],
             ];
-
-
 
             return response()->json($responseData, 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat memperbarui status lamaran'
+                'message' => 'Terjadi kesalahan saat memperbarui status lamaran',
             ], 500);
         }
     }
@@ -344,7 +333,7 @@ class PostLowonganController extends Controller
     public function updateStatusReviewed($id)
     {
         $lamaran = Lamaran::find($id);
-        if (!$lamaran) {
+        if (! $lamaran) {
             return response()->json(['success' => false, 'message' => 'Lamaran tidak ditemukan'], 404);
         }
 

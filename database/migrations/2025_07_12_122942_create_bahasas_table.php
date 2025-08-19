@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('bahasas', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('tingkat', array_map(fn($enum) => $enum->value, LanguageLevel::cases()));
+            $table->enum('tingkat', array_map(fn ($enum) => $enum->value, LanguageLevel::cases()));
             $table->foreignId('resume_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });

@@ -8,7 +8,6 @@ use App\Models\Regency;
 use App\Models\Village;
 use App\Trait\ApiResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class LocationController extends Controller
 {
@@ -57,7 +56,7 @@ class LocationController extends Controller
         try {
             $regencyId = $request->input('regencie_id');
 
-            if (!$regencyId) {
+            if (! $regencyId) {
                 return $this->errorResponse("Parameter 'regencie_id' diperlukan.", 400);
             }
 

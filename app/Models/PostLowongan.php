@@ -11,7 +11,6 @@ class PostLowongan extends Model
 
     protected $table = 'post_lowongan';
 
-
     protected $fillable = [
         'job_title',
         'job_type',
@@ -27,12 +26,12 @@ class PostLowongan extends Model
         'accessibility_features',
         'work_accommodations',
         'skills',
-        'perusahaan_profile_id'
+        'perusahaan_profile_id',
     ];
 
     protected $casts = [
         'skills' => 'array', // casting JSON ke array
-        'application_deadline' => 'date'
+        'application_deadline' => 'date',
     ];
 
     public function perusahaanProfile()
@@ -49,10 +48,6 @@ class PostLowongan extends Model
     {
         return $this->hasMany(Lamaran::class, 'lowongan_id');
     }
-
-
-
-
 
     public function tipePekerjaan()
     {
@@ -85,8 +80,6 @@ class PostLowongan extends Model
     {
         return $this->belongsTo(Industri::class, 'industris_id');
     }
-
-
 
     public function modelKerja()
     {

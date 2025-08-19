@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\PerusahaanProfile;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class PerusahaanProfileController extends Controller
@@ -25,10 +25,10 @@ class PerusahaanProfileController extends Controller
                 ->where('user_id', $userId)
                 ->first();
 
-            if (!$profile) {
+            if (! $profile) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Profile perusahaan tidak ditemukan'
+                    'message' => 'Profile perusahaan tidak ditemukan',
                 ], 404);
             }
 
@@ -44,13 +44,13 @@ class PerusahaanProfileController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Profile perusahaan berhasil diambil',
-                'data' => $profile
+                'data' => $profile,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat mengambil profile perusahaan',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -77,7 +77,7 @@ class PerusahaanProfileController extends Controller
                 'regencie_id' => 'required|string|size:4|exists:regencies,id',
                 'deskripsi' => 'required|string',
 
-                // Informasi Kontak  
+                // Informasi Kontak
                 'no_telp' => 'nullable|string|max:20',
                 'link_website' => 'nullable|url|max:255',
                 'alamat_lengkap' => 'required',
@@ -109,7 +109,7 @@ class PerusahaanProfileController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Validasi gagal',
-                    'errors' => $validator->errors()
+                    'errors' => $validator->errors(),
                 ], 422);
             }
 
@@ -120,7 +120,7 @@ class PerusahaanProfileController extends Controller
             $isUpdate = $profile !== null;
 
             // Validasi nib unique kecuali untuk update profile yang sama
-            if (!$isUpdate || ($isUpdate && $profile->nib !== $request->nib)) {
+            if (! $isUpdate || ($isUpdate && $profile->nib !== $request->nib)) {
                 $nibExists = PerusahaanProfile::where('nib', $request->nib)
                     ->where('user_id', '!=', $userId)
                     ->exists();
@@ -128,7 +128,7 @@ class PerusahaanProfileController extends Controller
                 if ($nibExists) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'nib sudah digunakan oleh perusahaan lain'
+                        'message' => 'nib sudah digunakan oleh perusahaan lain',
                     ], 422);
                 }
             }
@@ -155,15 +155,15 @@ class PerusahaanProfileController extends Controller
                 'youtube' => $request->youtube,
                 'tiktok' => $request->tiktok,
                 // User ID dari yang login
-                'user_id' => $userId
+                'user_id' => $userId,
             ];
 
             // Handle nilai_nilai array
             if ($request->has('nilai_nilai') && is_array($request->nilai_nilai)) {
                 $filteredNilaiNilai = array_filter($request->nilai_nilai, function ($value) {
-                    return !empty(trim($value));
+                    return ! empty(trim($value));
                 });
-                $data['nilai_nilai'] = !empty($filteredNilaiNilai) ? json_encode(array_values($filteredNilaiNilai)) : null;
+                $data['nilai_nilai'] = ! empty($filteredNilaiNilai) ? json_encode(array_values($filteredNilaiNilai)) : null;
             } else {
                 $data['nilai_nilai'] = null;
             }
@@ -171,9 +171,9 @@ class PerusahaanProfileController extends Controller
             // Handle sertifikat array
             if ($request->has('sertifikat') && is_array($request->sertifikat)) {
                 $filteredSertifikat = array_filter($request->sertifikat, function ($value) {
-                    return !empty(trim($value));
+                    return ! empty(trim($value));
                 });
-                $data['sertifikat'] = !empty($filteredSertifikat) ? json_encode(array_values($filteredSertifikat)) : null;
+                $data['sertifikat'] = ! empty($filteredSertifikat) ? json_encode(array_values($filteredSertifikat)) : null;
             } else {
                 $data['sertifikat'] = null;
             }
@@ -191,15 +191,15 @@ class PerusahaanProfileController extends Controller
                 } catch (\Exception $e) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Gagal mengupload logo: ' . $e->getMessage()
+                        'message' => 'Gagal mengupload logo: '.$e->getMessage(),
                     ], 500);
                 }
-            } elseif (!$isUpdate && !$request->filled('logo')) {
+            } elseif (! $isUpdate && ! $request->filled('logo')) {
                 // Jika create dan tidak ada logo, set required
                 return response()->json([
                     'success' => false,
                     'message' => 'Logo perusahaan wajib diupload',
-                    'errors' => ['logo' => ['Logo perusahaan wajib diupload']]
+                    'errors' => ['logo' => ['Logo perusahaan wajib diupload']],
                 ], 422);
             }
 
@@ -216,15 +216,15 @@ class PerusahaanProfileController extends Controller
                 } catch (\Exception $e) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Gagal mengupload bukti wajib lapor: ' . $e->getMessage()
+                        'message' => 'Gagal mengupload bukti wajib lapor: '.$e->getMessage(),
                     ], 500);
                 }
-            } elseif (!$isUpdate && !$request->filled('bukti_wajib_lapor')) {
+            } elseif (! $isUpdate && ! $request->filled('bukti_wajib_lapor')) {
                 // Jika create dan tidak ada bukti, set required
                 return response()->json([
                     'success' => false,
                     'message' => 'Bukti wajib lapor wajib diupload',
-                    'errors' => ['bukti_wajib_lapor' => ['Bukti wajib lapor wajib diupload']]
+                    'errors' => ['bukti_wajib_lapor' => ['Bukti wajib lapor wajib diupload']],
                 ], 422);
             }
 
@@ -273,14 +273,15 @@ class PerusahaanProfileController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => $message,
-                'data' => $profile
+                'data' => $profile,
             ], $isUpdate ? 200 : 201);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat menyimpan profile perusahaan',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -295,10 +296,10 @@ class PerusahaanProfileController extends Controller
 
             $profile = PerusahaanProfile::where('user_id', $userId)->first();
 
-            if (!$profile) {
+            if (! $profile) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Profile perusahaan tidak ditemukan'
+                    'message' => 'Profile perusahaan tidak ditemukan',
                 ], 404);
             }
 
@@ -321,7 +322,7 @@ class PerusahaanProfileController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Profile perusahaan berhasil dihapus'
+                'message' => 'Profile perusahaan berhasil dihapus',
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -329,7 +330,7 @@ class PerusahaanProfileController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat menghapus profile perusahaan',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -349,7 +350,7 @@ class PerusahaanProfileController extends Controller
     {
         // Extract the mime type and data
         $matches = [];
-        if (!preg_match('/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9\-\+]+);base64,(.+)$/', $base64String, $matches)) {
+        if (! preg_match('/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9\-\+]+);base64,(.+)$/', $base64String, $matches)) {
             throw new \Exception('Invalid base64 format');
         }
 
@@ -364,11 +365,11 @@ class PerusahaanProfileController extends Controller
         $extension = $this->getExtensionFromMimeType($mimeType);
 
         // Generate unique filename
-        $filename = Str::uuid() . '.' . $extension;
-        $path = $folder . '/' . $filename;
+        $filename = Str::uuid().'.'.$extension;
+        $path = $folder.'/'.$filename;
 
         // Store file
-        if (!Storage::disk('public')->put($path, $data)) {
+        if (! Storage::disk('public')->put($path, $data)) {
             throw new \Exception('Failed to store file');
         }
 

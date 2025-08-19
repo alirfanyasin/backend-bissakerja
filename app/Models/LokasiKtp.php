@@ -4,15 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class LokasiKtp extends Model
 {
     /** @use HasFactory<\Database\Factories\LokasiKtpFactory> */
     use HasFactory;
-
 
     protected $table = 'lokasi_user_profiles';
 
@@ -39,7 +35,6 @@ class LokasiKtp extends Model
     {
         return $this->belongsTo(UserProfile::class);
     }
-
 
     // Relasi ke Province
     public function province()
