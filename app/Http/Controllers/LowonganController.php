@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\PostLowongan;
-use Illuminate\Http\Request;
 
 class LowonganController extends Controller
 {
@@ -19,7 +18,6 @@ class LowonganController extends Controller
             'data' => $data,
         ], 200);
     }
-
 
     public function show($id)
     {

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Enum\RoleEnum;
 use App\Models\AdminProfile;
 use App\Models\PerusahaanProfile;
@@ -12,15 +11,16 @@ use App\Models\UserProfile;
 use App\Trait\ApiResponse;
 use App\Trait\RoleCheck;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class AccountManagementController extends Controller
 {
     use ApiResponse, RoleCheck;
+
     // ========================= For Super Admin =========================
     public function getRegenciesByAdminRole()
     {
@@ -46,7 +46,6 @@ class AccountManagementController extends Controller
         }
     }
 
-
     public function getAdminRoleByLocation()
     {
         $user = Auth::user();
@@ -67,7 +66,6 @@ class AccountManagementController extends Controller
             return $this->errorResponse($th->getMessage(), 500);
         }
     }
-
 
     public function createAdminRoleByLocation(Request $request)
     {
@@ -91,7 +89,7 @@ class AccountManagementController extends Controller
             ]);
 
             // Set default avatar
-            $newUser->avatar = 'https://ui-avatars.com/api/?name=' . urlencode($newUser->name);
+            $newUser->avatar = 'https://ui-avatars.com/api/?name='.urlencode($newUser->name);
             $newUser->save();
 
             $newUser->assignRole(RoleEnum::ADMIN->value);
@@ -108,6 +106,7 @@ class AccountManagementController extends Controller
             return $this->successResponse('Akun admin berhasil dibuat.');
         } catch (\Throwable $th) {
             DB::rollBack();
+
             return $this->errorResponse($th->getMessage(), 500);
         }
     }
@@ -136,9 +135,11 @@ class AccountManagementController extends Controller
             return $this->successResponse('Akun admin berhasil dihapus permanen.');
         } catch (ModelNotFoundException $e) {
             DB::rollBack();
+
             return $this->errorResponse('Akun admin tidak ditemukan.', 404);
         } catch (\Throwable $th) {
             DB::rollBack();
+
             return $this->errorResponse($th->getMessage(), 500);
         }
     }
@@ -165,13 +166,14 @@ class AccountManagementController extends Controller
             return $this->successResponse('Akun admin berhasil direstore.');
         } catch (ModelNotFoundException $e) {
             DB::rollBack();
+
             return $this->errorResponse('Akun admin tidak ditemukan.', 404);
         } catch (\Throwable $th) {
             DB::rollBack();
+
             return $this->errorResponse($th->getMessage(), 500);
         }
     }
-
 
     public function updateAdminRoleByLocation(Request $request)
     {
@@ -194,7 +196,7 @@ class AccountManagementController extends Controller
             $user->name = $validate['name'];
             $user->email = $validate['email'];
 
-            if (!empty($validate['password'])) {
+            if (! empty($validate['password'])) {
                 $user->password = Hash::make($validate['password']);
             }
 
@@ -210,13 +212,14 @@ class AccountManagementController extends Controller
             return $this->successResponse('Akun admin berhasil diupdate.');
         } catch (ModelNotFoundException $e) {
             DB::rollBack();
+
             return $this->errorResponse('Akun admin tidak ditemukan.', 404);
         } catch (\Throwable $th) {
             DB::rollBack();
+
             return $this->errorResponse($th->getMessage(), 500);
         }
     }
-
 
     // ========================= For Super Admin and Admin =========================
 
@@ -238,15 +241,11 @@ class AccountManagementController extends Controller
                     ->get();
             }
 
-
-
-
             return $this->successResponse($query);
         } catch (\Throwable $th) {
             return $this->errorResponse($th->getMessage(), 500);
         }
     }
-
 
     public function showCompanyByLocation($id)
     {
@@ -283,14 +282,14 @@ class AccountManagementController extends Controller
             return $this->successResponse('Akun perusahaan dan logonya berhasil dihapus permanen.');
         } catch (ModelNotFoundException $e) {
             DB::rollBack();
+
             return $this->errorResponse('Akun perusahaan tidak ditemukan.', 404);
         } catch (\Throwable $th) {
             DB::rollBack();
+
             return $this->errorResponse($th->getMessage(), 500);
         }
     }
-
-
 
     // MANAGEMENT USER PROFILE
     public function getUserProfileByLocation()
@@ -336,12 +335,12 @@ class AccountManagementController extends Controller
                     })
                     ->get();
             }
+
             return $this->successResponse($query);
         } catch (\Throwable $th) {
             return $this->errorResponse($th->getMessage(), 500);
         }
     }
-
 
     public function showUserProfileByLocation($id)
     {

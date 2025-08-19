@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserProfile extends Model
 {
@@ -12,7 +11,6 @@ class UserProfile extends Model
     use HasFactory;
 
     protected $fillable = ['nik', 'tanggal_lahir', 'jenis_kelamin', 'latar_belakang', 'no_telp', 'status_kawin', 'user_id', 'disabilitas_id'];
-
 
     public function disabilitas()
     {
