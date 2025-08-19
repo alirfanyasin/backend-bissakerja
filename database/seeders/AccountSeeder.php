@@ -4,14 +4,14 @@ namespace Database\Seeders;
 
 use App\Enum\RoleEnum;
 use App\Models\AdminProfile;
+use App\Models\Disabilitas;
 use App\Models\LokasiDomisili;
 use App\Models\LokasiKtp;
 use App\Models\Province;
 use App\Models\Regency;
 use App\Models\User;
 use App\Models\UserProfile;
-use App\Models\Village;
-use App\Models\Disabilitas; // Tambahkan import ini jika ada model Disabilitas
+use App\Models\Village; // Tambahkan import ini jika ada model Disabilitas
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -160,10 +160,10 @@ class AccountSeeder extends Seeder
 
             // Super Admin
             $superAdmin = User::create([
-                'name' =>  $province->name,
-                'email' => Str::slug($province->name) . '@gmail.com',
+                'name' => $province->name,
+                'email' => Str::slug($province->name).'@gmail.com',
                 'password' => bcrypt('password'),
-                'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($province->name),
+                'avatar' => 'https://ui-avatars.com/api/?name='.urlencode($province->name),
             ]);
             $superAdmin->assignRole(RoleEnum::SUPER_ADMIN->value);
 
@@ -175,10 +175,10 @@ class AccountSeeder extends Seeder
             // Admin
             foreach ($province->regencies as $regency) {
                 $admin = User::create([
-                    'name' =>  $regency->name,
-                    'email' => Str::slug($regency->name) . '@gmail.com',
+                    'name' => $regency->name,
+                    'email' => Str::slug($regency->name).'@gmail.com',
                     'password' => bcrypt('password'),
-                    'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($regency->name),
+                    'avatar' => 'https://ui-avatars.com/api/?name='.urlencode($regency->name),
                 ]);
                 $admin->assignRole(RoleEnum::ADMIN->value);
 

@@ -28,6 +28,7 @@ class Regency extends Model
     protected $table = 'regencies';
 
     protected $keyType = 'string'; // wajib kalau id-nya bukan integer
+
     protected $fillable = ['id', 'province_id', 'name'];
 
     public $incrementing = false;

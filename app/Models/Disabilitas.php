@@ -27,7 +27,6 @@ class Disabilitas extends Model
         return $this->hasMany(UserProfile::class, 'disabilitas_id');
     }
 
-
     public function lowongan()
     {
         return $this->hasMany(LowonganKerja::class, 'disabilitas_id');
