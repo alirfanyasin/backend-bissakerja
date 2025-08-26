@@ -287,6 +287,9 @@ Route::prefix('account-management')
         Route::get('/show-user-profile-by-location/{id}', [AccountManagementController::class, 'showUserProfileByLocation']);
     });
 
+
+
+
 Route::prefix('/disability')
     ->group(function () {
         // Get disabilitas
@@ -300,5 +303,5 @@ Route::prefix('/disability')
     });
 
 
-Route::get('master-data-lowongan', [LowonganController::class, 'masterDataLowongan']);
-Route::get('master-data-pelamar', [LamaranController::class, 'masterDataPelamar']);
+Route::get('master-data-lowongan', [LowonganController::class, 'masterDataLowongan'])->middleware(['auth:sanctum']);
+Route::get('master-data-pelamar', [LamaranController::class, 'masterDataPelamar'])->middleware(['auth:sanctum']);
