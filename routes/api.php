@@ -287,14 +287,6 @@ Route::prefix('account-management')
         Route::get('/show-user-profile-by-location/{id}', [AccountManagementController::class, 'showUserProfileByLocation']);
     });
 
-// Route::get('/disability', function () {
-//    return response()->json([
-//        'status' => true,
-//        'message' => 'Get data disability successfull',
-//        'data' => Disabilitas::all()
-//    ]);
-// });
-
 Route::prefix('/disability')
     ->group(function () {
         // Get disabilitas
@@ -306,3 +298,7 @@ Route::prefix('/disability')
         // Delete disabilitas
         Route::post('delete-disability/{id}', [SuperAdminController::class, 'deleteDisabilitas']);
     });
+
+
+Route::get('master-data-lowongan', [LowonganController::class, 'masterDataLowongan']);
+Route::get('master-data-pelamar', [LamaranController::class, 'masterDataPelamar']);

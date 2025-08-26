@@ -30,4 +30,19 @@ class LowonganController extends Controller
             'data' => $lowongan,
         ], 200);
     }
+
+
+
+    public function masterDataLowongan()
+    {
+        $data = PostLowongan::with(['perusahaanProfile', 'disabilitas'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Daftar lowongan berhasil diambil',
+            'data' => $data,
+        ], 200);
+    }
 }

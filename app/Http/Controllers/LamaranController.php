@@ -117,4 +117,31 @@ class LamaranController extends Controller
     {
         // Logic to delete an application
     }
+
+
+    public function masterDataPelamar()
+    {
+        $lamaran = Lamaran::with([
+            'user',
+            'lowongan',
+            'lowongan.perusahaanProfile',
+            'lowongan.disabilitas',
+        ])
+            ->get();
+
+        if ($lamaran) {
+            // Data ditemukan = sudah dilamar
+            return response()->json([
+                'success' => true,
+                'message' => 'Daftar pelamar berhasil diambil',
+                'data' => $lamaran,
+            ], 200);
+        } else {
+            // Data tidak ditemukan = belum dilamar
+            return response()->json([
+                'success' => true,
+                'message' => 'Daftar pelamar kosong',
+            ], 200);
+        }
+    }
 }

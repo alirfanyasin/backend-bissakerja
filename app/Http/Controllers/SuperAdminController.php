@@ -142,7 +142,7 @@ class SuperAdminController extends Controller
             }
 
             if ($request->has('name')) {
-                $query->where('name', 'like', '%'.$request->input('name').'%');
+                $query->where('name', 'like', '%' . $request->input('name') . '%');
             }
 
             $perPage = $request->input('per_page', 15);
@@ -218,7 +218,7 @@ class SuperAdminController extends Controller
             // Update avatar
             if ($request->hasFile('avatar')) {
                 $avatar = $request->file('avatar');
-                $avatarFilename = Str::random(20).'.'.$avatar->getClientOriginalExtension();
+                $avatarFilename = Str::random(20) . '.' . $avatar->getClientOriginalExtension();
 
                 // Simpan ke disk 'avatar'
                 Storage::disk('avatar')->put($avatarFilename, file_get_contents($avatar));
@@ -229,7 +229,7 @@ class SuperAdminController extends Controller
                 }
 
                 // Simpan path baru
-                $user->avatar = 'avatar/'.$avatarFilename;
+                $user->avatar = 'avatar/' . $avatarFilename;
                 $user->save();
             }
 
@@ -362,9 +362,9 @@ class SuperAdminController extends Controller
      */
     public function getDisabilitas()
     {
-        if ($this->isAllRoles()) {
-            return $this->errorResponse('Tidak dapat menampilkan disabilitas.', 403);
-        }
+        // if ($this->isAllRoles()) {
+        //     return $this->errorResponse('Tidak dapat menampilkan disabilitas.', 403);
+        // }
         try {
             $data = Disabilitas::all();
 
