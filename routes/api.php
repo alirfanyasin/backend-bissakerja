@@ -8,6 +8,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\LowonganController;
 use App\Http\Controllers\PerusahaanProfileController;
 use App\Http\Controllers\PostLowonganController;
+use App\Http\Controllers\PublicJobController;
 use App\Http\Controllers\ResumeController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StatistikController;
@@ -82,9 +83,6 @@ use Illuminate\Support\Facades\Route;
 //     Route::patch('/lowongan/{id}/status', [AdminLowonganController::class, 'updateStatus']);
 // });
 
-
-
-
 // Route::prefix('perusahaan')->group(function () {
 //     Route::get('lowongan', [PostLowonganController::class, 'index']);
 //     Route::post('lowongan', [PostLowonganController::class, 'store']);
@@ -123,8 +121,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 });
 
-
-
 // New Company Routes
 Route::middleware(['auth:sanctum'])->prefix('company')
     ->group(function () {
@@ -133,7 +129,6 @@ Route::middleware(['auth:sanctum'])->prefix('company')
         Route::get('/job-vacancies/{id}', [PostLowonganController::class, 'show']);
         Route::delete('/job-vacancies/{id}', [PostLowonganController::class, 'destroy']);
         Route::get('/job-vacancies/{id}/applicant', [PostLowonganController::class, 'lihatPelamar']);
-
 
         // Update status of job vacancy
         Route::put('/job-vacancies/{id}/status', [PostLowonganController::class, 'updateStatus']);
@@ -155,7 +150,6 @@ Route::middleware(['auth:sanctum'])
         Route::get('/check-user-profile', [LamaranController::class, 'cekUserProfile']);
     });
 
-
 Route::prefix('perusahaan')
     ->middleware(['auth:sanctum'])
     ->group(function () {
@@ -169,7 +163,6 @@ Route::prefix('perusahaan')
         // Memperbarui profile perusahaan
         Route::put('/update', [PerusahaanProfileController::class, 'updatePerusahaanProfile']);
     });
-
 
 // Baru
 // Company profile routes
@@ -267,18 +260,16 @@ Route::middleware(['auth:sanctum'])
         Route::get('/statistik-total-kandidat', [StatistikController::class, 'getStatistikKandidat']);
     });
 
-
 // Management Account By Super Admin and Admin
 Route::prefix('superadmin')
     ->middleware(['auth:sanctum'])
     ->group(function () {
-        // Management Admin Role 
+        // Management Admin Role
         Route::get('/get-admin-role-by-location', [AccountManagementController::class, 'getAdminRoleByLocation']);
         Route::post('/create-admin-role-by-location', [AccountManagementController::class, 'createAdminRoleByLocation']);
         Route::delete('/delete-admin-role-by-location/{id}', [AccountManagementController::class, 'deleteAdminRoleByLocation']);
         Route::post('/admin-role-by-location/{id}/restore', [AccountManagementController::class, 'restoreAdminRoleByLocation']);
         Route::patch('/admin-role-by-location/{id}/update', [AccountManagementController::class, 'updateAdminRoleByLocation']);
-
 
         // Get Location By Admin Role
         Route::get('/get-regency-by-admin-role', [AccountManagementController::class, 'getRegenciesByAdminRole']);
@@ -298,10 +289,53 @@ Route::prefix('account-management')
     });
 
 
-Route::get('/disability', function () {
+
+
+Route::prefix('/disability')
+    ->group(function () {
+        // Get disabilitas
+        Route::get('/', [SuperAdminController::class, 'getDisabilitas']);
+        // Create disabilitas baru
+        Route::post('create-disability', [SuperAdminController::class, 'createDisabilitas']);
+        // Update disabilitas
+        Route::put('update-disability/{id}', [SuperAdminController::class, 'updateDisabilitas']);
+        // Delete disabilitas
+        Route::post('delete-disability/{id}', [SuperAdminController::class, 'deleteDisabilitas']);
+    });
+
+// Public Job Vacancies endpoints (untuk frontend tanpa auth)
+Route::prefix('public')->group(function () {
+    Route::get('/job-vacancies', [PublicJobController::class, 'index']);
+    Route::get('/job-vacancies/{id}', [PublicJobController::class, 'show']);
+});
+
+// Main endpoints untuk frontend (tanpa prefix, lebih sederhana)
+Route::get('/job-vacancies', [PublicJobController::class, 'index']);
+Route::get('/job-vacancies/{id}', [PublicJobController::class, 'show']);
+
+// Alternative Indonesian endpoints
+Route::get('/lowongan-pekerjaan', [PublicJobController::class, 'index']);
+Route::get('/lowongan-pekerjaan/{id}', [PublicJobController::class, 'show']);
+
+// Company dashboard endpoints (dengan auth untuk perusahaan)
+Route::middleware(['auth:sanctum'])->prefix('company')->group(function () {
+    Route::get('/lowongan', [PostLowonganController::class, 'index']); // company's own jobs
+    Route::post('/lowongan', [PostLowonganController::class, 'store']);
+    Route::get('/lowongan/{id}', [PostLowonganController::class, 'show']);
+    Route::delete('/lowongan/{id}', [PostLowonganController::class, 'destroy']);
+    Route::get('/lowongan/{id}/pelamar', [PostLowonganController::class, 'lihatPelamar']);
+    Route::put('/lamaran/{id}/status', [PostLowonganController::class, 'updateStatus']);
+    Route::put('/lamaran/{id}/reviewed', [PostLowonganController::class, 'updateStatusReviewed']);
+});
+
+// Health check endpoint untuk testing
+Route::get('/health', function() {
     return response()->json([
-        'status' => true,
-        'message' => 'Get data disability successfull',
-        'data' => Disabilitas::all()
+        'status' => 'OK',
+        'message' => 'API is working',
+        'timestamp' => now()
     ]);
 });
+
+Route::get('master-data-lowongan', [LowonganController::class, 'masterDataLowongan'])->middleware(['auth:sanctum']);
+Route::get('master-data-pelamar', [LamaranController::class, 'masterDataPelamar'])->middleware(['auth:sanctum']);

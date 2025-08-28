@@ -9,6 +9,7 @@ use App\Models\AdminProfile;
 use App\Models\Province;
 use App\Models\Regency;
 use App\Models\User;
+use App\Models\Disabilitas;
 use App\Trait\ApiResponse;
 use App\Trait\RoleCheck;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -265,6 +266,199 @@ class SuperAdminController extends Controller
             return $this->errorResponse('Akun disnaker daerah tidak ditemukan.', 404);
         } catch (\Throwable $th) {
             return $this->errorResponse($th->getMessage(), 500);
+        }
+    }
+    /**
+     * Get all disabilitas data with search and filter
+     */
+    public function getDisabilitas(Request $request): JsonResponse
+    {
+        try {
+            $query = Disabilitas::query();
+
+            // Search functionality
+            if ($request->filled('search')) {
+                $search = $request->get('search');
+                $query->where('kategori_disabilitas', 'like', '%' . $search . '%');
+            }
+
+            // Filter by tingkat disabilitas
+            if ($request->filled('tingkat') && $request->get('tingkat') !== 'all') {
+                $query->where('tingkat_disabilitas', $request->get('tingkat'));
+            }
+
+            // Sorting
+            $sortBy = $request->get('sort_by', 'updated_at');
+            $sortOrder = $request->get('sort_order', 'desc');
+            $query->orderBy($sortBy, $sortOrder);
+
+            // Pagination
+            $perPage = $request->get('per_page', 10);
+            $disabilitas = $query->paginate($perPage);
+
+            // Calculate statistics
+            $stats = [
+                'total' => Disabilitas::count(),
+                'ringan' => Disabilitas::where('tingkat_disabilitas', 'Ringan')->count(),
+                'sedang' => Disabilitas::where('tingkat_disabilitas', 'Sedang')->count(),
+                'berat' => Disabilitas::where('tingkat_disabilitas', 'Berat')->count(),
+            ];
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data disabilitas berhasil diambil',
+                'data' => $disabilitas,
+                'statistics' => $stats
+            ], 200);
+
+        } catch (\Exception $e) {
+            return $this->errorResponse('Gagal mengambil data disabilitas: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Create new disabilitas
+     */
+    public function createDisabilitas(Request $request): JsonResponse
+    {
+        try {
+            DB::beginTransaction();
+
+            // Validation
+            $request->validate([
+                'kategori_disabilitas' => 'required|string|max:255|unique:disabilitas,kategori_disabilitas',
+                'tingkat_disabilitas' => 'required|string|in:Ringan,Sedang,Berat'
+            ], [
+                'kategori_disabilitas.required' => 'Kategori disabilitas harus diisi',
+                'kategori_disabilitas.unique' => 'Kategori disabilitas sudah ada',
+                'tingkat_disabilitas.required' => 'Tingkat disabilitas harus dipilih',
+                'tingkat_disabilitas.in' => 'Tingkat disabilitas harus Ringan, Sedang, atau Berat'
+            ]);
+
+            // Create new disabilitas
+            $disabilitas = Disabilitas::create([
+                'kategori_disabilitas' => trim($request->kategori_disabilitas),
+                'tingkat_disabilitas' => $request->tingkat_disabilitas
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data disabilitas berhasil ditambahkan',
+                'data' => $disabilitas
+            ], 201);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Data tidak valid',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->errorResponse('Gagal menambahkan data disabilitas: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Update existing disabilitas
+     */
+    public function updateDisabilitas(Request $request, $id): JsonResponse
+    {
+        try {
+            DB::beginTransaction();
+
+            // Find disabilitas
+            $disabilitas = Disabilitas::findOrFail($id);
+
+            // Validation
+            $request->validate([
+                'kategori_disabilitas' => 'required|string|max:255|unique:disabilitas,kategori_disabilitas,' . $id,
+                'tingkat_disabilitas' => 'required|string|in:Ringan,Sedang,Berat'
+            ], [
+                'kategori_disabilitas.required' => 'Kategori disabilitas harus diisi',
+                'kategori_disabilitas.unique' => 'Kategori disabilitas sudah ada',
+                'tingkat_disabilitas.required' => 'Tingkat disabilitas harus dipilih',
+                'tingkat_disabilitas.in' => 'Tingkat disabilitas harus Ringan, Sedang, atau Berat'
+            ]);
+
+            // Update disabilitas
+            $disabilitas->update([
+                'kategori_disabilitas' => trim($request->kategori_disabilitas),
+                'tingkat_disabilitas' => $request->tingkat_disabilitas
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data disabilitas berhasil diperbarui',
+                'data' => $disabilitas->fresh()
+            ], 200);
+
+        } catch (ModelNotFoundException $e) {
+            DB::rollBack();
+            return $this->errorResponse('Data disabilitas tidak ditemukan', 404);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Data tidak valid',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->errorResponse('Gagal memperbarui data disabilitas: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Delete disabilitas
+     */
+    public function deleteDisabilitas($id): JsonResponse
+    {
+        try {
+            DB::beginTransaction();
+
+            // Find disabilitas
+            $disabilitas = Disabilitas::findOrFail($id);
+
+            // Check if disabilitas is being used
+            $userCount = $disabilitas->userProfiles()->count();
+            $lowonganCount = $disabilitas->lowongan()->count();
+            $postLowonganCount = $disabilitas->postLowongan()->count();
+
+            if ($userCount > 0 || $lowonganCount > 0 || $postLowonganCount > 0) {
+                DB::rollBack();
+                return $this->errorResponse('Tidak dapat menghapus data disabilitas karena masih digunakan oleh data lain', 409);
+            }
+
+            // Store data for response before deletion
+            $deletedData = $disabilitas->toArray();
+
+            // Delete disabilitas
+            $disabilitas->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data disabilitas berhasil dihapus',
+                'data' => $deletedData
+            ], 200);
+
+        } catch (ModelNotFoundException $e) {
+            DB::rollBack();
+            return $this->errorResponse('Data disabilitas tidak ditemukan', 404);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->errorResponse('Gagal menghapus data disabilitas: ' . $e->getMessage(), 500);
         }
     }
 }
