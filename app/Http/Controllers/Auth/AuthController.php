@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -27,18 +28,7 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6',
-            'role' => 'required|string|in:user,perusahaan,admin,superadmin',
         ]);
-
-        // Cek kalau role yang mau dibuat = admin, tapi user bukan superadmin
-        if ($request->role === RoleEnum::ADMIN->value) {
-            if (! Auth::check() || ! Auth::user()->hasRole(RoleEnum::SUPER_ADMIN->value)) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'You do not have permission to register an admin user.',
-                ], 403);
-            }
-        }
 
         try {
             DB::beginTransaction();
@@ -77,17 +67,22 @@ class AuthController extends Controller
             ], 500);
         }
     }
-
     public function login(Request $request): JsonResponse
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|min:6',
-        ]);
+        $request->validate(['email' => 'required|email', 'password' => 'required|min:6',]);
+
+        if ($request->role === RoleEnum::ADMIN->value || $request->role === RoleEnum::SUPER_ADMIN->value) {
+            return response()->json(
+                [
+                    'status' => false,
+                    'message' => 'You do not have permission to register an admin user.',
+                ],
+                403
+            );
+        }
 
         if (Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
             $user = Auth::user();
-
             return response()->json([
                 'status' => true,
                 'message' => 'Login successful',
@@ -101,12 +96,10 @@ class AuthController extends Controller
                 ],
             ], 200);
         }
-
-        return response()->json([
-            'status' => false,
-            'message' => 'Login Failed',
-        ], 401);
+        return response()->json(['status' => false, 'message' => 'Login Failed',], 401);
     }
+
+
 
     public function user(Request $request)
     {
@@ -264,7 +257,7 @@ class AuthController extends Controller
                 ], 422);
             }
         } catch (Exception $e) {
-            Log::error('Avatar update error: '.$e->getMessage(), [
+            Log::error('Avatar update error: ' . $e->getMessage(), [
                 'user_id' => Auth::id(),
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -301,10 +294,10 @@ class AuthController extends Controller
 
         // Generate unique filename
         $extension = $file->getClientOriginalExtension();
-        $filename = 'avatars/'.$user->id.'_'.Str::random(10).'.'.$extension;
+        $filename = 'avatars/' . $user->id . '_' . Str::random(10) . '.' . $extension;
 
         // Store the file
-        $path = $file->storeAs('public/'.dirname($filename), basename($filename));
+        $path = $file->storeAs('public/' . dirname($filename), basename($filename));
 
         if (! $path) {
             return response()->json([
@@ -390,7 +383,7 @@ class AuthController extends Controller
         $this->deleteOldAvatar($user);
 
         // Generate unique filename
-        $filename = 'avatars/'.$user->id.'_'.Str::random(10).'.'.$imageInfo['extension'];
+        $filename = 'avatars/' . $user->id . '_' . Str::random(10) . '.' . $imageInfo['extension'];
 
         // Store the image
         $stored = Storage::disk('public')->put($filename, base64_decode($imageInfo['data']));

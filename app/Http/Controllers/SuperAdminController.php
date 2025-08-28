@@ -267,90 +267,82 @@ class SuperAdminController extends Controller
         }
     }
 
-    /**
-     * Membuat kategori disabilitas baru dengan 3 tingkat default (Sedang, Ringan, Berat).
-     *
-     * @return JsonResponse
-     */
-    public function createDisabilitas(Request $request)
+    public function createDisabilitas(Request $request): JsonResponse
     {
-        if ($this->isSuperAdmin()) {
-            return $this->errorResponse('Tidak dapat menambahkan disabilitas baru.', 403);
-        }
-
-        $validateData = $request->validate([
-            'name' => 'required|string|unique:disabilitas,name',
+        $validated = $request->validate([
+            'kategori_disabilitas' => 'required|string|max:191',
         ]);
 
-        try {
-            $tingkatDisabilitas = ['Sedang', 'Ringan', 'Berat'];
+        $kategori = ucwords(strtolower(trim($validated['kategori_disabilitas'])));
+        $levels = ['Ringan', 'Sedang', 'Berat'];
 
-            foreach ($tingkatDisabilitas as $tingkat) {
-                Disabilitas::create([
-                    'kategori_disabilitas' => strtolower($validateData['name']),
-                    'tingkat_disabilitas' => $tingkat,
-                ]);
-            }
+        try {
+            DB::transaction(function () use ($kategori, $levels) {
+                foreach ($levels as $level) {
+                    // Cegah duplikasi kategori+tingkat
+                    $exists = Disabilitas::where('kategori_disabilitas', $kategori)
+                        ->where('tingkat_disabilitas', $level)
+                        ->exists();
+
+                    if (!$exists) {
+                        Disabilitas::create([
+                            'kategori_disabilitas' => $kategori,
+                            'tingkat_disabilitas'  => $level,
+                        ]);
+                    }
+                }
+            });
 
             return $this->successResponse('Disabilitas berhasil ditambahkan.');
         } catch (\Throwable $e) {
             Log::channel('log_error')->error($e->getMessage());
-
             return $this->errorResponse('Gagal membuat kategori disabilitas', 500);
         }
     }
 
-    /**
-     * Mengupdate kategori disabilitas berdasarkan nama yang ada.
-     *
-     * @param  int  $id
-     * @return JsonResponse
-     */
-    public function updateDisabilitas($id, Request $request)
+    public function updateDisabilitas($id, Request $request): JsonResponse
     {
-        if ($this->isSuperAdmin()) {
-            return $this->errorResponse('Tidak dapat menambahkan disabilitas baru.', 403);
-        }
-
-        $validateData = $request->validate([
-            'name' => 'required|string|exists:disabilitas,name',
+        $validated = $request->validate([
+            'kategori_disabilitas' => 'sometimes|required|string|max:191',
+            'tingkat_disabilitas'  => 'sometimes|required|string|in:Ringan,Sedang,Berat',
         ]);
 
         try {
-            $data = Disabilitas::where('kategori_disabilitas', $validateData['name'])->get();
+            $row = Disabilitas::findOrFail($id);
 
-            foreach ($data as $d) {
-                $d->kategori_disabilitas = strtolower($validateData['name']);
-                $d->save();
+            if (isset($validated['kategori_disabilitas'])) {
+                $row->kategori_disabilitas = strtolower(trim($validated['kategori_disabilitas']));
             }
+            if (isset($validated['tingkat_disabilitas'])) {
+                $row->tingkat_disabilitas = $validated['tingkat_disabilitas'];
+            }
+
+            // Cegah duplikasi jika user mengganti ke kombinasi yang sudah ada
+            $exists = Disabilitas::where('id', '!=', $row->id)
+                ->where('kategori_disabilitas', $row->kategori_disabilitas)
+                ->where('tingkat_disabilitas', $row->tingkat_disabilitas)
+                ->exists();
+
+            if ($exists) {
+                return $this->errorResponse('Kombinasi kategori dan tingkat sudah ada.', 422);
+            }
+
+            $row->save();
 
             return $this->successResponse('Disabilitas berhasil diupdate.');
         } catch (\Throwable $e) {
             Log::channel('log_error')->error($e->getMessage());
-
             return $this->errorResponse('Gagal memperbarui disabilitas', 500);
         }
     }
 
-    /**
-     * Menghapus disabilitas berdasarkan ID.
-     *
-     * @param  int  $id
-     * @return JsonResponse
-     */
-    public function deleteDisabilitas($id, Request $request)
+    public function deleteDisabilitas($id): JsonResponse
     {
-        if ($this->isSuperAdmin()) {
-            return $this->errorResponse('Tidak dapat menghapus disabilitas baru.', 403);
-        }
-
         try {
             Disabilitas::findOrFail($id)->delete();
-
             return $this->successResponse('Disabilitas berhasil dihapus.');
         } catch (\Throwable $e) {
             Log::channel('log_error')->error($e->getMessage());
-
             return $this->errorResponse('Gagal menghapus disabilitas', 500);
         }
     }

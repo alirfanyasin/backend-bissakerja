@@ -15,103 +15,16 @@ use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\UserProfileController;
 use App\Models\Disabilitas;
+use App\Models\LowonganKerja;
+use App\Models\PostLowongan;
 use App\Models\Resume;
 use Illuminate\Support\Facades\Route;
-
-// Route::prefix('superadmin')
-//     ->middleware(['auth:sanctum'])
-//     ->group(function () {
-//         // Disnaker Daerah
-//         Route::post('/create-account-disnaker-daerah', [SuperAdminController::class, 'createAccountDisnakerDaerah']);
-//         Route::post('/delete-account-disnaker-daerah/{id}', [SuperAdminController::class, 'deleteAccountDisnakerDaerah']);
-//         Route::get('/get-account-disnaker-daerah', [SuperAdminController::class, 'getAccountDisnakerDaerah']);
-//         Route::get('/get-account-by-id-disnaker-daerah/{id}', [SuperAdminController::class, 'getAccountByIdDisnakerDaerah']);
-//         Route::post('/update-account-disnaker-daerah', [SuperAdminController::class, 'updateAccountDisnakerDaerah']);
-
-//         // Perusahaan
-//         Route::post('/create-account-perusahaan', [UserManagementController::class, 'createAccountPerusahaan']);
-//         Route::post('/delete-account-perusahaan/{id}', [UserManagementController::class, 'deleteAccountPerusahaan']);
-//         Route::get('/get-account-perusahaan', [UserManagementController::class, 'getAccountPerusahaan']);
-//         Route::get('/get-account-by-id-perusahaan/{id}', [UserManagementController::class, 'getAccountByIdPerusahaan']);
-//         Route::post('/update-account-perusahaan', [UserManagementController::class, 'updateAccountPerusahaan']);
-
-//         // Kandidat
-//         Route::post('/create-account-kandidat', [UserManagementController::class, 'createAccountKandidat']);
-//         Route::post('/delete-account-kandidat/{id}', [UserManagementController::class, 'deleteAccountKandidat']);
-//         Route::get('/get-account-kandidat', [UserManagementController::class, 'getAccountKandidat']);
-//         Route::get('/get-account-by-id-kandidat/{id}', [UserManagementController::class, 'getAccountByIdKandidat']);
-//         Route::post('/update-account-kandidat', [UserManagementController::class, 'updateAccountKandidat']);
-
-//         // Role
-//         Route::post('/create-role', [RoleController::class, 'createRole']);
-//         Route::post('/assign-role', [RoleController::class, 'assignRoleToUser']);
-//         Route::get('/get-role', [RoleController::class, 'getRole']);
-//     });
-
-// Route::prefix('admin')
-//     ->middleware(['auth:sanctum'])
-//     ->group(function () {
-//         Route::get('/lowongan', [AdminLowonganController::class, 'index'])->middleware(['auth:sanctum']);
-//         Route::post('/lowongan', [AdminLowonganController::class, 'store']);
-//         Route::get('/lowongan/{id}', [AdminLowonganController::class, 'show']);
-//         Route::put('/lowongan/{id}', [AdminLowonganController::class, 'update']);
-//         Route::delete('/lowongan/{id}', [AdminLowonganController::class, 'destroy']);
-//         Route::patch('/lowongan/{id}/status', [AdminLowonganController::class, 'updateStatus']);
-
-//         // Perusahaan
-//         Route::post('/create-account-perusahaan', [UserManagementController::class, 'createAccountPerusahaan']);
-//         Route::post('/delete-account-perusahaan', [UserManagementController::class, 'deleteAccountPerusahaan']);
-//         Route::get('/get-account-perusahaan', [UserManagementController::class, 'getAccountPerusahaan']);
-//         Route::get('/get-account-by-id-perusahaan', [UserManagementController::class, 'getAccountByIdPerusahaan']);
-//         Route::post('/update-account-perusahaan', [UserManagementController::class, 'updateAccountPerusahaan']);
-
-//         // Kandidat
-//         Route::post('/create-account-kandidat', [UserManagementController::class, 'createAccountKandidat']);
-//         Route::post('/delete-account-kandidat', [UserManagementController::class, 'deleteAccountKandidat']);
-//         Route::get('/get-account-kandidat', [UserManagementController::class, 'getAccountKandidat']);
-//         Route::get('/get-account-by-id-kandidat', [UserManagementController::class, 'getAccountByIdKandidat']);
-//         Route::post('/update-account-kandidat', [UserManagementController::class, 'updateAccountKandidat']);
-//     });
-
-// Route::prefix('admin')->group(function () {
-//     Route::get('/lowongan', [AdminLowonganController::class, 'index'])->middleware(['auth:sanctum']);
-//     Route::post('/lowongan', [AdminLowonganController::class, 'store']);
-//     Route::get('/lowongan/{id}', [AdminLowonganController::class, 'show']);
-//     Route::put('/lowongan/{id}', [AdminLowonganController::class, 'update']);
-//     Route::delete('/lowongan/{id}', [AdminLowonganController::class, 'destroy']);
-//     Route::patch('/lowongan/{id}/status', [AdminLowonganController::class, 'updateStatus']);
-// });
-
-// Route::prefix('perusahaan')->group(function () {
-//     Route::get('lowongan', [PostLowonganController::class, 'index']);
-//     Route::post('lowongan', [PostLowonganController::class, 'store']);
-//     Route::put('lowongan/{id}', [PostLowonganController::class, 'update']);
-//     Route::put('lowongan/{id}/ubah-status', [PostLowonganController::class, 'ubahStatus']);
-//     Route::delete('lowongan/{id}', [PostLowonganController::class, 'destroy']);
-//     Route::get('lowongan/filter', [PostLowonganController::class, 'filter']);
-//     Route::get('lowongan/detail/{id}', [PostLowonganController::class, 'detailLowongan']);
-//     Route::get('/lowongan/lihatLowongan', [PostLowonganController::class, 'LihatLowongan']);
-//     Route::get('/lowongan/lihatPelamar', [LamaranController::class, 'lihatPelamar']);
-//     // Route::get('/pelamar/{id}/detail-pelamar', [LamaranController::class, 'detailPelamar']);
-//     Route::delete('/pelamar/{id}', [LamaranController::class, 'destroy']);
-//     Route::put('/pelamar/{id}/status', [LamaranController::class, 'updateStatusPelamar']);
-//     Route::get('/lowongan/{id}/pelamar', [lamaranController::class, 'daftarPelamar']);
-// });
-
-// Pelamar
-// Route::post('/lowongan/{id}/daftar', [LamaranController::class, 'daftar']);
 
 // Authentication Routes
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/refresh-csrf', [AuthController::class, 'refreshCsrf']);
 
-// Route::middleware('auth:sanctum')->group(function () {
-//     Route::get('/user', [AuthController::class, 'user']);
-//     Route::patch('/profile', [AuthController::class, 'updateProfile']);
-//     Route::patch('/profile/update-avatar', [AuthController::class, 'updateAvatar']);
-//     Route::post('/logout', [AuthController::class, 'logout']);
-// });
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
@@ -133,6 +46,18 @@ Route::middleware(['auth:sanctum'])->prefix('company')
         Route::put('/job-vacancies/{id}/status', [PostLowonganController::class, 'updateStatus']);
         Route::put('/job-vacancies/{id}/status/reviewed', [PostLowonganController::class, 'updateStatusReviewed']);
     });
+
+// For all users in landing page
+Route::get('/job-vacancies', function () {
+    $jobVacancies = PostLowongan::with(['perusahaanProfile', 'disabilitas'])
+        ->latest()
+        ->get();
+    return response()->json([
+        'success' => true,
+        'message' => 'Daftar lowongan berhasil diambil',
+        'data' => $jobVacancies
+    ]);
+});
 
 // Job Vacancies Routes no authentication
 Route::prefix('jobs')

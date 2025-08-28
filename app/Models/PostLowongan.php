@@ -39,6 +39,7 @@ class PostLowongan extends Model
         return $this->belongsTo(PerusahaanProfile::class);
     }
 
+
     public function disabilitas()
     {
         return $this->belongsToMany(Disabilitas::class, 'post_lowongan_disabilitas');
