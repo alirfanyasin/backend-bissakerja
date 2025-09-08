@@ -132,13 +132,6 @@ class AuthController extends Controller
             // Validation rules
             $rules = [
                 'name' => 'required|string|max:255',
-                'email' => [
-                    'required',
-                    'string',
-                    'email',
-                    'max:255',
-                    Rule::unique('users')->ignore($user->id),
-                ],
             ];
 
             // Add password validation if password is being updated
@@ -173,7 +166,6 @@ class AuthController extends Controller
             // Update user data
             $updateData = [
                 'name' => $request->name,
-                'email' => $request->email,
             ];
 
             if ($request->filled('password')) {

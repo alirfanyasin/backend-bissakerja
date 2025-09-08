@@ -12,6 +12,7 @@ use App\Http\Controllers\ResumeController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StatistikController;
 use App\Http\Controllers\SuperAdminController;
+use App\Http\Controllers\TalentPoolController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\UserProfileController;
 use App\Models\Disabilitas;
@@ -101,6 +102,14 @@ Route::prefix('perusahaan')
 
         // Menghapus profile perusahaan
         Route::delete('/profile', [PerusahaanProfileController::class, 'deletePerusahaanProfile']);
+    });
+
+Route::prefix('talent-pool')
+    ->middleware(['auth:sanctum'])
+    ->group(function () {
+        Route::get('/all', [TalentPoolController::class, 'getAll']);
+        Route::post('/recruit', [TalentPoolController::class, 'recruitTalent']);
+        Route::post('/confirm', [TalentPoolController::class, 'recruitConfirm']);
     });
 
 Route::prefix('user')
