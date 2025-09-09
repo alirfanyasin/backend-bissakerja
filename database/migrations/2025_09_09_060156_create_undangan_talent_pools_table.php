@@ -15,7 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_profile_id')->constrained()->cascadeOnDelete();
             $table->foreignId('perusahaan_profile_id')->constrained()->cascadeOnDelete();
-            $table->enum('status', ['Menunggu Respon', 'Diterima', 'Ditolak', 'Dibatalkan', 'Wawancara', 'Dipekerjakan']);
+            $table->foreignId('post_lowongan_id')->constrained('post_lowongan')->cascadeOnDelete();
+            $table->enum('status', ['Menunggu', 'Diterima', 'Ditolak', 'Dibatalkan', 'Wawancara', 'Dipekerjakan'])->default('Menunggu');
+            $table->unsignedMediumInteger('salary_min')->nullable();
+            $table->unsignedMediumInteger('salary_max')->nullable();
             $table->timestamps();
         });
     }
