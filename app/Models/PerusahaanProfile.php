@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PerusahaanProfile extends Model
 {
@@ -91,7 +92,7 @@ class PerusahaanProfile extends Model
     public function getLogoUrlAttribute()
     {
         if ($this->logo) {
-            return asset('storage/'.$this->logo);
+            return asset('storage/' . $this->logo);
         }
 
         return null;
@@ -103,9 +104,19 @@ class PerusahaanProfile extends Model
     public function getBuktiWajibLaporUrlAttribute()
     {
         if ($this->bukti_wajib_lapor) {
-            return asset('storage/'.$this->bukti_wajib_lapor);
+            return asset('storage/' . $this->bukti_wajib_lapor);
         }
 
         return null;
+    }
+
+    /**
+     * Get all of the undangan_talent_pool for the PerusahaanProfile
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function undangan_talent_pool(): HasMany
+    {
+        return $this->hasMany(UndanganTalentPool::class);
     }
 }

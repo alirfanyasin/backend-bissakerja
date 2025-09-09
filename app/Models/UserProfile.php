@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class UserProfile extends Model
 {
@@ -30,5 +31,11 @@ class UserProfile extends Model
     public function resume()
     {
         return $this->hasOne(Resume::class);
+    }
+
+
+    public function undangan_talent_pool(): HasMany
+    {
+        return $this->hasMany(UndanganTalentPool::class);
     }
 }

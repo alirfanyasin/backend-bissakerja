@@ -13,6 +13,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StatistikController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\TalentPoolController;
+use App\Http\Controllers\UndanganTalentPoolController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\UserProfileController;
 use App\Models\Disabilitas;
@@ -107,11 +108,17 @@ Route::prefix('perusahaan')
 Route::prefix('talent-pool')
     ->middleware(['auth:sanctum'])
     ->group(function () {
-        Route::get('/all', [TalentPoolController::class, 'getAll']);
-        Route::post('/recruit', [TalentPoolController::class, 'recruitTalent']);
-        Route::post('/confirm', [TalentPoolController::class, 'recruitConfirm']);
+        Route::get('/all', [UndanganTalentPoolController::class, 'getAll']);
+        Route::get('/get-profile/{id}', [UndanganTalentPoolController::class, 'getProfile']);
+        Route::get('/get-my-job', [UndanganTalentPoolController::class, 'getMyJob']);
+        Route::post('/send-invitations', [UndanganTalentPoolController::class, 'sendInvitations']);
+        Route::get('/my-talent', [UndanganTalentPoolController::class, 'myTalent']);
+
+        Route::put('/update-status/{id}', [UndanganTalentPoolController::class, 'updateStatus']);
+        Route::get('/get-invitation-user', [UndanganTalentPoolController::class, 'getInvitationUser']);
     });
 
+// Route::get('/tes', [UndanganTalentPoolController::class, 'test']);
 Route::prefix('user')
     ->middleware(['auth:sanctum'])
     ->group(function () {
