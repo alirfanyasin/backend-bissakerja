@@ -241,10 +241,10 @@ class PerusahaanProfileController extends Controller
                 }
 
                 if ($hasImportantChanges || $request->filled('bukti_wajib_lapor')) {
-                    $data['status_verifikasi'] = 'belum';
+                    $data['status_verifikasi'] = 'proses';
                 }
             } else {
-                $data['status_verifikasi'] = 'belum';
+                $data['status_verifikasi'] = 'proses';
             }
 
             // Simpan atau update data
