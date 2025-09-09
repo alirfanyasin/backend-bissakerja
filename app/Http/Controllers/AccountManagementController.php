@@ -261,6 +261,36 @@ class AccountManagementController extends Controller
         }
     }
 
+    public function updateCompanyByLocation(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $validate = $request->validate([
+                'id' => 'required|exists:admin_profiles,id',
+                'status' => 'in:belum,proses,terverifikasi',
+            ]);
+
+            $companyProfile = PerusahaanProfile::findOrFail($validate['id']);
+
+            // Update status perusahaan profile data
+            $companyProfile->status_verifikasi = $validate['status'];
+            $companyProfile->save();
+
+            DB::commit();
+
+            return $this->successResponse('Akun perusahaan berhasil diupdate.');
+        } catch (ModelNotFoundException $e) {
+            DB::rollBack();
+
+            return $this->errorResponse('Akun perusahaan tidak ditemukan.', 404);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            return $this->errorResponse($th->getMessage(), 500);
+        }
+    }
+
     public function deleteCompanyByLocation($id)
     {
         try {
@@ -366,4 +396,5 @@ class AccountManagementController extends Controller
             return $this->errorResponse($th->getMessage(), 500);
         }
     }
+
 }

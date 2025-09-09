@@ -214,6 +214,7 @@ Route::prefix('account-management')
         // Management Company Account
         Route::get('/get-company-by-location', [AccountManagementController::class, 'getCompanyByLocation']);
         Route::get('/show-company-by-location/{id}', [AccountManagementController::class, 'showCompanyByLocation']);
+        Route::patch('/update-company-by-location/{id}', [AccountManagementController::class, 'updateCompanyByLocation']);
         Route::delete('/delete-company-by-location/{id}', [AccountManagementController::class, 'deleteCompanyByLocation']);
 
         // Management User Account
