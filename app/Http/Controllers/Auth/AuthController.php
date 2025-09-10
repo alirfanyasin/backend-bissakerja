@@ -4,15 +4,19 @@ namespace App\Http\Controllers\Auth;
 
 use App\Enum\RoleEnum;
 use App\Http\Controllers\Controller;
+use App\Mail\ForgotPasswordMail;
 use App\Models\PerusahaanProfile;
 use App\Models\User;
 use Exception;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -515,21 +519,86 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function forgotPassword()
+    /**
+     * Method untuk forgot password user.
+     *
+     * @return JsonResponse
+     *
+     * @throws \Throwable
+     */
+    public function forgotPassword(Request $request)
     {
+        DB::beginTransaction();
         try {
+            $validateData = $request->validate([
+                'email' => 'required|string|email|exists:users,email',
+            ]);
 
+            $user = User::where('email', $request->email)->first();
+
+            $token = Password::createToken($user);
+
+            Mail::to($user->email)->queue(new ForgotPasswordMail($token, $user->email, $user->name));
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Link reset password telah dikirim ke email Anda.',
+            ], 200);
         } catch (\Throwable $e) {
-            // handle exception
+            DB::rollBack();
+            Log::channel('errorlog')->error('AuthController [forgotPassword]'.$e->getMessage());
+
+            return response()->json([
+                'message' => 'Gagal mengirim link reset password ke email Anda.',
+            ], 400);
         }
     }
 
-    public function resetPassword()
+    /**
+     * Method untuk reset pasword.
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function resetPassword(Request $request)
     {
         try {
+            // Validasi input
+            $request->validate([
+                'token' => 'required',
+                'email' => 'required|email|exists:users,email',
+                'password' => 'required|min:8|confirmed',
+            ]);
+
+            // Reset password
+            $status = Password::reset(
+                $request->only('email', 'password', 'password_confirmation', 'token'),
+                function ($user, $password) {
+                    $user->forceFill([
+                        'password' => Hash::make($password),
+                    ])->setRememberToken(Str::random(60));
+
+                    $user->save();
+
+                    event(new PasswordReset($user));
+                }
+            );
+
+            if ($status === Password::PASSWORD_RESET) {
+                return response()->json(['message' => 'Password berhasil diubah'], 200);
+            }
+
+            return response()->json(['message' => __($status)], 400);
 
         } catch (\Throwable $e) {
-            // handle exception
+            // Log error supaya bisa dilacak
+            Log::channel('errorlog')->error('AuthController [resetPassword] '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat reset password. ',
+            ], 500);
         }
     }
 }
