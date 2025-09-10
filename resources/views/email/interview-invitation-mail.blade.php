@@ -33,16 +33,12 @@
                 </p>
 
                 <!-- Call to action -->
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href=""
-                       style="background-color: #16a34a; color: #ffffff; text-decoration: none; padding: 12px 20px; border-radius: 6px; font-size: 15px; display: inline-block; margin-right:10px;">
-                        Accept Invitation
-                    </a>
-                    <a href=""
-                       style="background-color: #dc2626; color: #ffffff; text-decoration: none; padding: 12px 20px; border-radius: 6px; font-size: 15px; display: inline-block;">
-                        Decline Invitation
-                    </a>
-                </div>
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{ config('url.client') }}"
+                style="background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 20px; border-radius: 6px; font-size: 15px; display: inline-block;">
+                    View Your Invitations
+                </a>
+            </div>
 
                 <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">Best regards,</p>
                 <p style="font-size: 14px; color: #111827; margin: 5px 0 0 0;"><strong>HR Recruitment</strong></p>
