@@ -8,6 +8,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\LowonganController;
 use App\Http\Controllers\PerusahaanProfileController;
 use App\Http\Controllers\PostLowonganController;
+use App\Http\Controllers\RecruitmentController;
 use App\Http\Controllers\ResumeController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StatistikController;
@@ -287,10 +288,38 @@ Route::prefix('account-management')
         Route::get('/show-user-profile-by-location/{id}', [AccountManagementController::class, 'showUserProfileByLocation']);
     });
 
-Route::get('/disability', function () {
-    return response()->json([
-        'status' => true,
-        'message' => 'Get data disability successfull',
-        'data' => Disabilitas::all(),
-    ]);
-});
+Route::prefix('user-management')
+    ->middleware(['auth:sanctum'])
+    ->group(function () {
+        // Get all user account and profile
+        Route::get('/get-user-profile', [UserManagementController::class, 'getAccountKandidat']);
+    });
+
+Route::prefix('recruitment-job')
+//    ->middleware(['auth:sanctum'])
+    ->group(function () {
+        Route::post('/invite', [RecruitmentController::class, 'sendRecruitmentToCandidate']);
+        Route::post('/update-status-user', [RecruitmentController::class, 'updateUserRecruitmentStatus']);
+        Route::post('/update-status-perusahaan', [RecruitmentController::class, 'updatePerusahaanRecruitmentStatus']);
+        Route::get('/get', [RecruitmentController::class, 'getRecruitment']);
+    });
+
+// Route::get('/disability', function () {
+//    return response()->json([
+//        'status' => true,
+//        'message' => 'Get data disability successfull',
+//        'data' => Disabilitas::all()
+//    ]);
+// });
+
+Route::prefix('/disability')
+    ->group(function () {
+        // Get disabilitas
+        Route::get('/', [SuperAdminController::class, 'getDisabilitas']);
+        // Create disabilitas baru
+        Route::post('create-disability', [SuperAdminController::class, 'createDisabilitas']);
+        // Update disabilitas
+        Route::put('update-disability/{id}', [SuperAdminController::class, 'updateDisabilitas']);
+        // Delete disabilitas
+        Route::post('delete-disability/{id}', [SuperAdminController::class, 'deleteDisabilitas']);
+    });

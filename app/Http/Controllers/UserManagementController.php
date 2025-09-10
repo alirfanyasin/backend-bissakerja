@@ -282,7 +282,7 @@ class UserManagementController extends Controller
     }
 
     /**
-     * Get all akun kandidat
+     * get all user dengan filter2 nya
      */
     public function getAccountKandidat(Request $request): JsonResponse
     {
@@ -310,6 +310,22 @@ class UserManagementController extends Controller
             if ($request->has('jenis_kelamin')) {
                 $query->whereHas('userProfile', function ($q) use ($request) {
                     $q->where('jenis_kelamin', $request->input('jenis_kelamin'));
+                });
+            }
+
+            // Filter user berpengalaman apa tidak
+            // Input is_experience = 1/0
+            if ($request->has('is_experience')) {
+                $query->whereHas('userProfile', function ($q) use ($request) {
+                    $q->where('is_experience', $request->input('is_experience'));
+                });
+            }
+
+            // Filter apakah user sekarang sedang bekerja atau tidak
+            // Input is_employment = 1/0
+            if ($request->has('is_employment')) {
+                $query->whereHas('userProfile', function ($q) use ($request) {
+                    $q->where('is_employment', $request->input('is_employment'));
                 });
             }
 

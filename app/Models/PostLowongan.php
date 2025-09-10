@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PostLowongan extends Model
 {
@@ -37,6 +38,11 @@ class PostLowongan extends Model
     public function perusahaanProfile()
     {
         return $this->belongsTo(PerusahaanProfile::class);
+    }
+
+    public function recruitment(): HasMany
+    {
+        return $this->hasMany(Recruitment::class);
     }
 
     public function disabilitas()
