@@ -8,6 +8,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\LowonganController;
 use App\Http\Controllers\PerusahaanProfileController;
 use App\Http\Controllers\PostLowonganController;
+use App\Http\Controllers\RecruitmentController;
 use App\Http\Controllers\ResumeController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StatistikController;
@@ -285,6 +286,22 @@ Route::prefix('account-management')
         // Management User Account
         Route::get('/get-user-profile-by-location', [AccountManagementController::class, 'getUserProfileByLocation']);
         Route::get('/show-user-profile-by-location/{id}', [AccountManagementController::class, 'showUserProfileByLocation']);
+    });
+
+Route::prefix('user-management')
+    ->middleware(['auth:sanctum'])
+    ->group(function () {
+        // Get all user account and profile
+        Route::get('/get-user-profile', [UserManagementController::class, 'getAccountKandidat']);
+    });
+
+Route::prefix('recruitment-job')
+//    ->middleware(['auth:sanctum'])
+    ->group(function () {
+        Route::post('/invite', [RecruitmentController::class, 'sendRecruitmentToCandidate']);
+        Route::post('/update-status-user', [RecruitmentController::class, 'updateUserRecruitmentStatus']);
+        Route::post('/update-status-perusahaan', [RecruitmentController::class, 'updatePerusahaanRecruitmentStatus']);
+        Route::get('/get', [RecruitmentController::class, 'getRecruitment']);
     });
 
 // Route::get('/disability', function () {
