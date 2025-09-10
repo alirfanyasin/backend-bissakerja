@@ -557,7 +557,7 @@ class AuthController extends Controller
 
     /**
      * Method untuk reset pasword.
-     * @param Request $request
+     *
      * @return JsonResponse
      */
     public function resetPassword(Request $request)
