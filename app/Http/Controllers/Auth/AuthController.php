@@ -512,4 +512,22 @@ class AuthController extends Controller
             'message' => 'Logout successful',
         ], 200);
     }
+
+    public function forgotPassword()
+    {
+        try {
+
+        } catch (\Throwable $e) {
+            // handle exception
+        }
+    }
+
+    public function resetPassword()
+    {
+        try {
+
+        } catch (\Throwable $e) {
+            // handle exception
+        }
+    }
 }
