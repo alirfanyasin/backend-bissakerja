@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PerusahaanProfile extends Model
 {
@@ -44,6 +45,11 @@ class PerusahaanProfile extends Model
         'nilai_nilai' => 'array',
         'sertifikat' => 'array',
     ];
+
+    public function recruitment(): HasMany
+    {
+        return $this->hasMany(Recruitment::class);
+    }
 
     /**
      * Relasi ke model User
