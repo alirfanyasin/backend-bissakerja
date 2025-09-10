@@ -9,7 +9,9 @@ class KeterampilanSeeder extends Seeder
 {
     public function run(): void
     {
-        Keterampilan::firstOrCreate(['nama_keterampilan' => 'Laravel Developer']);
+        Keterampilan::firstOrCreate(
+            ['nama_keterampilan' => json_encode(['Laravel Developer'])]
+        );
 
     }
 }
