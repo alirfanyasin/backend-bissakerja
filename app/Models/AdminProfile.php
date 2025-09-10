@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AdminProfile extends Model
 {
-
     protected $fillable = ['user_id', 'district_id', 'regencie_id', 'province_id', 'village_id', 'status'];
 
     protected $casts = [

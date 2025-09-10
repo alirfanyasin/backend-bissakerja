@@ -22,7 +22,7 @@ class UpdateUserProfileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nik' => 'required|string|unique:user_profiles,nik,' . $this->userProfileId(),
+            'nik' => 'required|string|unique:user_profiles,nik,'.$this->userProfileId(),
             'tanggal_lahir' => 'required|date',
             'jenis_kelamin' => 'required|in:L,P',
             'no_telp' => 'required|string',

@@ -100,9 +100,9 @@ class UserProfileController extends Controller
 
             $userProfile = $user->userProfile;
 
-            if (!$userProfile) {
+            if (! $userProfile) {
                 return response()->json([
-                    'error' => 'User profile not found'
+                    'error' => 'User profile not found',
                 ], 404);
             }
 
@@ -121,11 +121,11 @@ class UserProfileController extends Controller
 
             return response()->json([
                 'message' => 'Profile updated successfully',
-                'data' => $userProfile
+                'data' => $userProfile,
             ]);
         } catch (\Throwable $e) {
             return response()->json([
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], $e->getCode() ?: 500);
         }
     }

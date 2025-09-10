@@ -14,11 +14,9 @@ use App\Trait\RoleCheck;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Request as FacadesRequest;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -143,7 +141,7 @@ class SuperAdminController extends Controller
             }
 
             if ($request->has('name')) {
-                $query->where('name', 'like', '%' . $request->input('name') . '%');
+                $query->where('name', 'like', '%'.$request->input('name').'%');
             }
 
             $perPage = $request->input('per_page', 15);
@@ -219,7 +217,7 @@ class SuperAdminController extends Controller
             // Update avatar
             if ($request->hasFile('avatar')) {
                 $avatar = $request->file('avatar');
-                $avatarFilename = Str::random(20) . '.' . $avatar->getClientOriginalExtension();
+                $avatarFilename = Str::random(20).'.'.$avatar->getClientOriginalExtension();
 
                 // Simpan ke disk 'avatar'
                 Storage::disk('avatar')->put($avatarFilename, file_get_contents($avatar));
@@ -230,7 +228,7 @@ class SuperAdminController extends Controller
                 }
 
                 // Simpan path baru
-                $user->avatar = 'avatar/' . $avatarFilename;
+                $user->avatar = 'avatar/'.$avatarFilename;
                 $user->save();
             }
 

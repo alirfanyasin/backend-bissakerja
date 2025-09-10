@@ -82,9 +82,6 @@ use Illuminate\Support\Facades\Route;
 //     Route::patch('/lowongan/{id}/status', [AdminLowonganController::class, 'updateStatus']);
 // });
 
-
-
-
 // Route::prefix('perusahaan')->group(function () {
 //     Route::get('lowongan', [PostLowonganController::class, 'index']);
 //     Route::post('lowongan', [PostLowonganController::class, 'store']);
@@ -123,8 +120,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 });
 
-
-
 // New Company Routes
 Route::middleware(['auth:sanctum'])->prefix('company')
     ->group(function () {
@@ -133,7 +128,6 @@ Route::middleware(['auth:sanctum'])->prefix('company')
         Route::get('/job-vacancies/{id}', [PostLowonganController::class, 'show']);
         Route::delete('/job-vacancies/{id}', [PostLowonganController::class, 'destroy']);
         Route::get('/job-vacancies/{id}/applicant', [PostLowonganController::class, 'lihatPelamar']);
-
 
         // Update status of job vacancy
         Route::put('/job-vacancies/{id}/status', [PostLowonganController::class, 'updateStatus']);
@@ -155,7 +149,6 @@ Route::middleware(['auth:sanctum'])
         Route::get('/check-user-profile', [LamaranController::class, 'cekUserProfile']);
     });
 
-
 Route::prefix('perusahaan')
     ->middleware(['auth:sanctum'])
     ->group(function () {
@@ -169,7 +162,6 @@ Route::prefix('perusahaan')
         // Memperbarui profile perusahaan
         Route::put('/update', [PerusahaanProfileController::class, 'updatePerusahaanProfile']);
     });
-
 
 // Baru
 // Company profile routes
@@ -267,18 +259,16 @@ Route::middleware(['auth:sanctum'])
         Route::get('/statistik-total-kandidat', [StatistikController::class, 'getStatistikKandidat']);
     });
 
-
 // Management Account By Super Admin and Admin
 Route::prefix('superadmin')
     ->middleware(['auth:sanctum'])
     ->group(function () {
-        // Management Admin Role 
+        // Management Admin Role
         Route::get('/get-admin-role-by-location', [AccountManagementController::class, 'getAdminRoleByLocation']);
         Route::post('/create-admin-role-by-location', [AccountManagementController::class, 'createAdminRoleByLocation']);
         Route::delete('/delete-admin-role-by-location/{id}', [AccountManagementController::class, 'deleteAdminRoleByLocation']);
         Route::post('/admin-role-by-location/{id}/restore', [AccountManagementController::class, 'restoreAdminRoleByLocation']);
         Route::patch('/admin-role-by-location/{id}/update', [AccountManagementController::class, 'updateAdminRoleByLocation']);
-
 
         // Get Location By Admin Role
         Route::get('/get-regency-by-admin-role', [AccountManagementController::class, 'getRegenciesByAdminRole']);
@@ -297,11 +287,10 @@ Route::prefix('account-management')
         Route::get('/show-user-profile-by-location/{id}', [AccountManagementController::class, 'showUserProfileByLocation']);
     });
 
-
 Route::get('/disability', function () {
     return response()->json([
         'status' => true,
         'message' => 'Get data disability successfull',
-        'data' => Disabilitas::all()
+        'data' => Disabilitas::all(),
     ]);
 });

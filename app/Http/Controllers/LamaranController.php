@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Lamaran;
 use App\Models\UserProfile;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class LamaranController extends Controller
@@ -13,7 +12,7 @@ class LamaranController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
         }
 
@@ -29,7 +28,7 @@ class LamaranController extends Controller
     public function cekLamaran($id)
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
         }
 
@@ -44,23 +43,22 @@ class LamaranController extends Controller
                 'success' => true,
                 'applied' => true,
                 'message' => 'Sudah melamar untuk lowongan ini',
-                'data' => $lamaran
+                'data' => $lamaran,
             ], 200);
         } else {
             // Data tidak ditemukan = belum dilamar
             return response()->json([
                 'success' => true,
                 'applied' => false,
-                'message' => 'Belum melamar untuk lowongan ini'
+                'message' => 'Belum melamar untuk lowongan ini',
             ], 200);
         }
     }
 
-
     public function lamaranSaya()
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
         }
 
@@ -68,7 +66,7 @@ class LamaranController extends Controller
             'user',
             'lowongan',
             'lowongan.perusahaanProfile',
-            'lowongan.disabilitas'
+            'lowongan.disabilitas',
         ])
             ->where('user_id', $user->id)
             ->get();
@@ -78,22 +76,21 @@ class LamaranController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Sudah melamar untuk lowongan ini',
-                'data' => $lamaran
+                'data' => $lamaran,
             ], 200);
         } else {
             // Data tidak ditemukan = belum dilamar
             return response()->json([
                 'success' => true,
-                'message' => 'Belum melamar untuk lowongan ini'
+                'message' => 'Belum melamar untuk lowongan ini',
             ], 200);
         }
     }
 
-
     public function cekUserProfile()
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
         }
 

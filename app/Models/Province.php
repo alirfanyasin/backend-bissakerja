@@ -28,7 +28,9 @@ class Province extends Model
     protected $table = 'provinces';
 
     protected $keyType = 'string'; // wajib kalau id-nya bukan integer
+
     protected $fillable = ['id', 'name'];
+
     public $incrementing = false;
 
     /**

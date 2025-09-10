@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('pendidikans', function (Blueprint $table) {
             $table->id();
-            $table->enum('tingkat', array_map(fn($enum) => $enum->value, EducationLevel::cases()));
+            $table->enum('tingkat', array_map(fn ($enum) => $enum->value, EducationLevel::cases()));
             $table->string('bidang_studi')->nullable();
             $table->string('nilai')->nullable();
             $table->date('tanggal_mulai');

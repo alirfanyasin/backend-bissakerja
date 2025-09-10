@@ -26,7 +26,6 @@ return new class extends Migration
             $table->foreign('district_ktp_id')->references('id')->on('districts')->onDelete('cascade');
             $table->foreign('village_ktp_id')->references('id')->on('villages')->onDelete('cascade');
 
-
             $table->string('kode_pos_domisili');
             $table->string('alamat_lengkap_domisili');
 

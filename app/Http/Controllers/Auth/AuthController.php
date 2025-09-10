@@ -15,26 +15,26 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
     public function register(Request $request)
     {
         $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|string|email|max:255|unique:users',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6',
-            'role'     => 'required|string|in:user,perusahaan,admin,superadmin',
+            'role' => 'required|string|in:user,perusahaan,admin,superadmin',
         ]);
 
         // Cek kalau role yang mau dibuat = admin, tapi user bukan superadmin
         if ($request->role === RoleEnum::ADMIN->value) {
-            if (!Auth::check() || !Auth::user()->hasRole(RoleEnum::SUPER_ADMIN->value)) {
+            if (! Auth::check() || ! Auth::user()->hasRole(RoleEnum::SUPER_ADMIN->value)) {
                 return response()->json([
-                    'status'  => false,
+                    'status' => false,
                     'message' => 'You do not have permission to register an admin user.',
                 ], 403);
             }
@@ -44,11 +44,11 @@ class AuthController extends Controller
             DB::beginTransaction();
 
             $user = User::create([
-                'name'     => $request->name,
-                'email'    => $request->email,
+                'name' => $request->name,
+                'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'avatar'   => $request->avatar ?? null,
-                'role'     => $request->role,
+                'avatar' => $request->avatar ?? null,
+                'role' => $request->role,
             ]);
 
             $user->assignRole($request->role);
@@ -56,29 +56,27 @@ class AuthController extends Controller
             if ($request->role === 'perusahaan') {
                 PerusahaanProfile::create([
                     'nama_perusahaan' => $user->name,
-                    'user_id'         => $user->id,
+                    'user_id' => $user->id,
                 ]);
             }
 
             DB::commit();
 
             return response()->json([
-                'status'  => true,
+                'status' => true,
                 'message' => 'User registered successfully',
-                'user'    => $user,
+                'user' => $user,
             ], 201);
         } catch (\Throwable $e) {
             DB::rollBack();
 
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Registration failed',
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-
-
 
     public function login(Request $request): JsonResponse
     {
@@ -89,6 +87,7 @@ class AuthController extends Controller
 
         if (Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
             $user = Auth::user();
+
             return response()->json([
                 'status' => true,
                 'message' => 'Login successful',
@@ -105,16 +104,17 @@ class AuthController extends Controller
 
         return response()->json([
             'status' => false,
-            'message' => 'Login Failed'
+            'message' => 'Login Failed',
         ], 401);
     }
 
     public function user(Request $request)
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
+
         return response()->json([
             'status' => true,
             'user' => $user,
@@ -129,10 +129,10 @@ class AuthController extends Controller
 
             $user = Auth::user();
 
-            if (!$user) {
+            if (! $user) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'User not authenticated'
+                    'message' => 'User not authenticated',
                 ], 401);
             }
 
@@ -144,7 +144,7 @@ class AuthController extends Controller
                     'string',
                     'email',
                     'max:255',
-                    Rule::unique('users')->ignore($user->id)
+                    Rule::unique('users')->ignore($user->id),
                 ],
             ];
 
@@ -160,19 +160,19 @@ class AuthController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Validation failed',
-                    'errors' => $validator->errors()
+                    'errors' => $validator->errors(),
                 ], 422);
             }
 
             // Verify current password if updating password
             if ($request->filled('password')) {
-                if (!Hash::check($request->current_password, $user->password)) {
+                if (! Hash::check($request->current_password, $user->password)) {
                     return response()->json([
                         'status' => false,
                         'message' => 'Current password is incorrect',
                         'errors' => [
-                            'current_password' => ['Current password is incorrect']
-                        ]
+                            'current_password' => ['Current password is incorrect'],
+                        ],
                     ], 422);
                 }
             }
@@ -201,27 +201,28 @@ class AuthController extends Controller
                 'status' => true,
                 'message' => 'Profile updated successfully',
                 'user' => $updatedUser,
-                'role' => $updatedUser->getRoleNames()->first()
+                'role' => $updatedUser->getRoleNames()->first(),
             ], 200);
         } catch (ValidationException $e) {
             DB::rollBack();
+
             return response()->json([
                 'status' => false,
                 'message' => 'Validation failed',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Profile update error', [
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'status' => false,
                 'message' => 'An error occurred while updating profile',
-                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error',
             ], 500);
         }
     }
@@ -234,10 +235,10 @@ class AuthController extends Controller
         try {
             $user = Auth::user();
 
-            if (!$user) {
+            if (! $user) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Unauthorized'
+                    'message' => 'Unauthorized',
                 ], 401);
             }
 
@@ -245,7 +246,7 @@ class AuthController extends Controller
                 'user_id' => $user->id,
                 'content_type' => $request->header('Content-Type'),
                 'has_file' => $request->hasFile('avatar'),
-                'has_avatar_field' => $request->has('avatar')
+                'has_avatar_field' => $request->has('avatar'),
             ]);
 
             // Check if it's a file upload or base64
@@ -258,20 +259,20 @@ class AuthController extends Controller
                     'status' => false,
                     'message' => 'No avatar data provided',
                     'errors' => [
-                        'avatar' => ['Please provide an avatar file or base64 data']
-                    ]
+                        'avatar' => ['Please provide an avatar file or base64 data'],
+                    ],
                 ], 422);
             }
         } catch (Exception $e) {
-            Log::error('Avatar update error: ' . $e->getMessage(), [
+            Log::error('Avatar update error: '.$e->getMessage(), [
                 'user_id' => Auth::id(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'status' => false,
                 'message' => 'An error occurred while updating profile photo',
-                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error',
             ], 500);
         }
     }
@@ -289,7 +290,7 @@ class AuthController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -300,18 +301,18 @@ class AuthController extends Controller
 
         // Generate unique filename
         $extension = $file->getClientOriginalExtension();
-        $filename = 'avatars/' . $user->id . '_' . Str::random(10) . '.' . $extension;
+        $filename = 'avatars/'.$user->id.'_'.Str::random(10).'.'.$extension;
 
         // Store the file
-        $path = $file->storeAs('public/' . dirname($filename), basename($filename));
+        $path = $file->storeAs('public/'.dirname($filename), basename($filename));
 
-        if (!$path) {
+        if (! $path) {
             return response()->json([
                 'status' => false,
                 'message' => 'Failed to save image',
                 'errors' => [
-                    'avatar' => ['Unable to save image file']
-                ]
+                    'avatar' => ['Unable to save image file'],
+                ],
             ], 500);
         }
 
@@ -322,7 +323,7 @@ class AuthController extends Controller
 
         Log::info('Avatar uploaded successfully via file upload', [
             'user_id' => $user->id,
-            'path' => $relativePath
+            'path' => $relativePath,
         ]);
 
         return $this->avatarUpdateResponse($user);
@@ -341,33 +342,33 @@ class AuthController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         $avatarData = $request->input('avatar');
 
         // Validate base64 image format
-        if (!$this->isValidBase64Image($avatarData)) {
+        if (! $this->isValidBase64Image($avatarData)) {
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid image format',
                 'errors' => [
-                    'avatar' => ['Please provide a valid image file (JPEG, PNG, GIF)']
-                ]
+                    'avatar' => ['Please provide a valid image file (JPEG, PNG, GIF)'],
+                ],
             ], 422);
         }
 
         // Extract image data and extension
         $imageInfo = $this->extractImageInfo($avatarData);
 
-        if (!$imageInfo) {
+        if (! $imageInfo) {
             return response()->json([
                 'status' => false,
                 'message' => 'Unable to process image',
                 'errors' => [
-                    'avatar' => ['Invalid image data']
-                ]
+                    'avatar' => ['Invalid image data'],
+                ],
             ], 422);
         }
 
@@ -380,8 +381,8 @@ class AuthController extends Controller
                 'status' => false,
                 'message' => 'Image too large',
                 'errors' => [
-                    'avatar' => ['Image size must be less than 5MB']
-                ]
+                    'avatar' => ['Image size must be less than 5MB'],
+                ],
             ], 422);
         }
 
@@ -389,18 +390,18 @@ class AuthController extends Controller
         $this->deleteOldAvatar($user);
 
         // Generate unique filename
-        $filename = 'avatars/' . $user->id . '_' . Str::random(10) . '.' . $imageInfo['extension'];
+        $filename = 'avatars/'.$user->id.'_'.Str::random(10).'.'.$imageInfo['extension'];
 
         // Store the image
         $stored = Storage::disk('public')->put($filename, base64_decode($imageInfo['data']));
 
-        if (!$stored) {
+        if (! $stored) {
             return response()->json([
                 'status' => false,
                 'message' => 'Failed to save image',
                 'errors' => [
-                    'avatar' => ['Unable to save image file']
-                ]
+                    'avatar' => ['Unable to save image file'],
+                ],
             ], 500);
         }
 
@@ -410,7 +411,7 @@ class AuthController extends Controller
 
         Log::info('Avatar uploaded successfully via base64', [
             'user_id' => $user->id,
-            'filename' => $filename
+            'filename' => $filename,
         ]);
 
         return $this->avatarUpdateResponse($user);
@@ -447,9 +448,9 @@ class AuthController extends Controller
                 'role' => $user->role,
                 'email_verified_at' => $user->email_verified_at,
                 'created_at' => $user->created_at,
-                'updated_at' => $user->updated_at
+                'updated_at' => $user->updated_at,
             ],
-            'role' => $user->getRoleNames()->first()
+            'role' => $user->getRoleNames()->first(),
         ], 200);
     }
 
@@ -459,7 +460,7 @@ class AuthController extends Controller
     private function isValidBase64Image($data)
     {
         // Check if it's a data URL format
-        if (!preg_match('/^data:image\/(\w+);base64,/', $data)) {
+        if (! preg_match('/^data:image\/(\w+);base64,/', $data)) {
             return false;
         }
 
@@ -467,7 +468,7 @@ class AuthController extends Controller
         $base64 = substr($data, strpos($data, ',') + 1);
 
         // Validate base64
-        if (!base64_decode($base64, true)) {
+        if (! base64_decode($base64, true)) {
             return false;
         }
 
@@ -480,7 +481,7 @@ class AuthController extends Controller
     private function extractImageInfo($data)
     {
         // Match data URL pattern
-        if (!preg_match('/^data:image\/(\w+);base64,(.+)$/', $data, $matches)) {
+        if (! preg_match('/^data:image\/(\w+);base64,(.+)$/', $data, $matches)) {
             return false;
         }
 
@@ -489,7 +490,7 @@ class AuthController extends Controller
 
         // Validate extension
         $allowedExtensions = ['jpeg', 'jpg', 'png', 'gif'];
-        if (!in_array(strtolower($extension), $allowedExtensions)) {
+        if (! in_array(strtolower($extension), $allowedExtensions)) {
             return false;
         }
 
@@ -500,13 +501,14 @@ class AuthController extends Controller
 
         return [
             'extension' => $extension,
-            'data' => $base64Data
+            'data' => $base64Data,
         ];
     }
 
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
+
         return response()->json([
             'status' => true,
             'message' => 'Logout successful',

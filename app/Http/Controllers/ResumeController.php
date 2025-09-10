@@ -259,7 +259,7 @@ class ResumeController extends Controller
     {
         try {
             $data = $request->validate([
-                'tingkat' => ['required', 'in:' . implode(',', array_map(fn($e) => $e->value, EducationLevel::cases()))],
+                'tingkat' => ['required', 'in:'.implode(',', array_map(fn ($e) => $e->value, EducationLevel::cases()))],
                 'bidang_studi' => 'nullable|string',
                 'nilai' => 'nullable|string|max:10',
                 'tanggal_mulai' => 'required|date',
@@ -288,8 +288,8 @@ class ResumeController extends Controller
             }
 
             $originalName = str_replace(' ', '_', $data['ijazah_info']['name']);
-            $filename = Str::random(30) . '-' . $originalName;
-            $path = 'ijazah/' . $filename;
+            $filename = Str::random(30).'-'.$originalName;
+            $path = 'ijazah/'.$filename;
 
             Storage::disk('public')->put($path, $decodedFile);
 
@@ -307,7 +307,7 @@ class ResumeController extends Controller
             return response()->json([
                 'message' => 'Data pendidikan berhasil ditambahkan',
                 'data' => $pendidikan,
-                'file_url' => asset('storage/' . $path)
+                'file_url' => asset('storage/'.$path),
             ], 201);
         } catch (\Throwable $e) {
             return response()->json([
@@ -316,7 +316,6 @@ class ResumeController extends Controller
             ], 500);
         }
     }
-
 
     public function getPendidikan()
     {
@@ -374,7 +373,7 @@ class ResumeController extends Controller
 
             // Handle file upload jika ada
             if ($request->hasFile('ijazah')) {
-                $path = 'ijazah/' . Str::random(30);
+                $path = 'ijazah/'.Str::random(30);
                 $updateData['ijazah'] = $request->file('ijazah')->store($path);
             }
 
@@ -507,7 +506,7 @@ class ResumeController extends Controller
             ];
 
             if ($request->hasFile('dokumen')) {
-                $path = 'pencapaian/' . Str::random(30);
+                $path = 'pencapaian/'.Str::random(30);
                 $updateData['dokumen'] = $request->file('dokumen')->store($path);
             }
 
@@ -574,7 +573,7 @@ class ResumeController extends Controller
                 }
 
                 $originalName = str_replace(' ', '_', $data['sertifikat_info']['name']);
-                $filePath = "pelatihan/" . $originalName;
+                $filePath = 'pelatihan/'.$originalName;
 
                 Storage::disk('public')->put($filePath, $decodedFile);
             }
@@ -593,6 +592,7 @@ class ResumeController extends Controller
             return $this->errorResponse([$e->getMessage()]);
         }
     }
+
     public function getPelatihan()
     {
         try {
@@ -646,7 +646,7 @@ class ResumeController extends Controller
 
             // Handle file upload jika ada
             if ($request->hasFile('sertifikat_file')) {
-                $path = 'pelatihan/' . Str::random(30);
+                $path = 'pelatihan/'.Str::random(30);
                 $updateData['sertifikat_file'] = $request->file('sertifikat_file')->store($path);
             }
 
@@ -720,7 +720,7 @@ class ResumeController extends Controller
 
                 $originalName = str_replace(' ', '_', $data['sertifikat_info']['name']);
                 $randomDir = Str::random(30);
-                $filePath = "sertifikat/{$randomDir}-" . $originalName;
+                $filePath = "sertifikat/{$randomDir}-".$originalName;
 
                 Storage::disk('public')->put($filePath, $decodedFile);
             }
@@ -785,7 +785,7 @@ class ResumeController extends Controller
                     Storage::delete($sertifikat->sertifikat_file);
                 }
 
-                $path = 'sertifikat/' . Str::random(30);
+                $path = 'sertifikat/'.Str::random(30);
                 $data['sertifikat_file'] = $request->file('sertifikat_file')->store($path);
             }
 
@@ -871,8 +871,8 @@ class ResumeController extends Controller
                 }
 
                 $originalName = str_replace(' ', '_', $data['sertifikat_info']['name']);
-                $filename = Str::random(30) . '-' . $originalName;
-                $filePath = 'pengalaman_kerja/' . $filename;
+                $filename = Str::random(30).'-'.$originalName;
+                $filePath = 'pengalaman_kerja/'.$filename;
 
                 Storage::disk('public')->put($filePath, $decodedFile);
             }
@@ -894,7 +894,6 @@ class ResumeController extends Controller
             return $this->errorResponse([$e->getMessage()]);
         }
     }
-
 
     public function getPengalamanKerja()
     {
@@ -975,8 +974,6 @@ class ResumeController extends Controller
         }
     }
 
-
-
     public function createLokasi(Request $request)
     {
         try {
@@ -1000,7 +997,7 @@ class ResumeController extends Controller
 
             // Mendapatkan user profile
             $userProfile = Auth::user()->userProfile;
-            if (!$userProfile) {
+            if (! $userProfile) {
                 return response()->json(['message' => 'User profile not found'], 404);
             }
 
@@ -1013,7 +1010,7 @@ class ResumeController extends Controller
 
                 return response()->json([
                     'message' => 'Lokasi berhasil diupdate',
-                    'data' => $lokasi
+                    'data' => $lokasi,
                 ], 200);
             } else {
                 // Jika belum ada, buat data baru
@@ -1022,13 +1019,13 @@ class ResumeController extends Controller
 
                 return response()->json([
                     'message' => 'Lokasi berhasil dibuat',
-                    'data' => $lokasi
+                    'data' => $lokasi,
                 ], 201);
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Throwable $e) {
             return response()->json([
@@ -1037,7 +1034,6 @@ class ResumeController extends Controller
             ], 500);
         }
     }
-
 
     public function deleteCV()
     {
