@@ -106,6 +106,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/refresh-csrf', [AuthController::class, 'refreshCsrf']);
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 
 // Route::middleware('auth:sanctum')->group(function () {
 //     Route::get('/user', [AuthController::class, 'user']);
@@ -119,6 +120,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/profile', [AuthController::class, 'updateProfile']);
     Route::put('/profile/update-avatar', [AuthController::class, 'updateAvatar']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 });
 
 // New Company Routes
